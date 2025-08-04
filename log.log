@@ -1,0 +1,1111 @@
+# aws_apigatewayv2_api.api:
+resource "aws_apigatewayv2_api" "api" {
+    api_endpoint                 = "https://lcw1eea0ag.execute-api.eu-central-1.amazonaws.com"
+    api_key_selection_expression = "$request.header.x-api-key"
+    arn                          = "arn:aws:apigateway:eu-central-1::/apis/lcw1eea0ag"
+    description                  = "Learning Cards API"
+    disable_execute_api_endpoint = false
+    execution_arn                = "arn:aws:execute-api:eu-central-1:988426489572:lcw1eea0ag"
+    id                           = "lcw1eea0ag"
+    ip_address_type              = "ipv4"
+    name                         = "learning-cards-api"
+    protocol_type                = "HTTP"
+    route_selection_expression   = "$request.method $request.path"
+    tags                         = {
+        "Name" = "learning-cards-api"
+    }
+    tags_all                     = {
+        "Name" = "learning-cards-api"
+    }
+    version                      = [90mnull[0m[0m
+
+    cors_configuration {
+        allow_credentials = false
+        allow_headers     = [
+            "authorization",
+            "content-type",
+        ]
+        allow_methods     = [
+            "*",
+        ]
+        allow_origins     = [
+            "*",
+        ]
+        expose_headers    = []
+        max_age           = 86400
+    }
+}
+
+# aws_apigatewayv2_integration.lambda:
+resource "aws_apigatewayv2_integration" "lambda" {
+    api_id                                    = "lcw1eea0ag"
+    connection_id                             = [90mnull[0m[0m
+    connection_type                           = "INTERNET"
+    content_handling_strategy                 = [90mnull[0m[0m
+    credentials_arn                           = [90mnull[0m[0m
+    description                               = [90mnull[0m[0m
+    id                                        = "qarlzfa"
+    integration_method                        = "POST"
+    integration_response_selection_expression = [90mnull[0m[0m
+    integration_subtype                       = [90mnull[0m[0m
+    integration_type                          = "AWS_PROXY"
+    integration_uri                           = "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:988426489572:function:learning-cards-function:live/invocations"
+    passthrough_behavior                      = [90mnull[0m[0m
+    payload_format_version                    = "1.0"
+    request_parameters                        = {}
+    request_templates                         = {}
+    template_selection_expression             = [90mnull[0m[0m
+    timeout_milliseconds                      = 30000
+}
+
+# aws_apigatewayv2_route.proxy:
+resource "aws_apigatewayv2_route" "proxy" {
+    api_id                              = "lcw1eea0ag"
+    api_key_required                    = false
+    authorization_scopes                = []
+    authorization_type                  = "NONE"
+    authorizer_id                       = [90mnull[0m[0m
+    id                                  = "boynbn4"
+    model_selection_expression          = [90mnull[0m[0m
+    operation_name                      = [90mnull[0m[0m
+    request_models                      = {}
+    route_key                           = "$default"
+    route_response_selection_expression = [90mnull[0m[0m
+    target                              = "integrations/qarlzfa"
+}
+
+# aws_apigatewayv2_stage.api:
+resource "aws_apigatewayv2_stage" "api" {
+    api_id                = "lcw1eea0ag"
+    arn                   = "arn:aws:apigateway:eu-central-1::/apis/lcw1eea0ag/stages/$default"
+    auto_deploy           = true
+    client_certificate_id = [90mnull[0m[0m
+    deployment_id         = "eez6nn"
+    description           = [90mnull[0m[0m
+    execution_arn         = "arn:aws:execute-api:eu-central-1:988426489572:lcw1eea0ag/$default"
+    id                    = "$default"
+    invoke_url            = "https://lcw1eea0ag.execute-api.eu-central-1.amazonaws.com/"
+    name                  = "$default"
+    stage_variables       = {}
+    tags                  = {
+        "Name" = "learning-cards-api-stage"
+    }
+    tags_all              = {
+        "Name" = "learning-cards-api-stage"
+    }
+
+    default_route_settings {
+        data_trace_enabled       = false
+        detailed_metrics_enabled = false
+        logging_level            = [90mnull[0m[0m
+        throttling_burst_limit   = 0
+        throttling_rate_limit    = 0
+    }
+}
+
+# aws_db_subnet_group.main:
+resource "aws_db_subnet_group" "main" {
+    arn                     = "arn:aws:rds:eu-central-1:988426489572:subgrp:learning-cards-db-subnet-group"
+    description             = "Managed by Terraform"
+    id                      = "learning-cards-db-subnet-group"
+    name                    = "learning-cards-db-subnet-group"
+    name_prefix             = [90mnull[0m[0m
+    subnet_ids              = [
+        "subnet-042bfeaf2acc43d97",
+        "subnet-0b4952695ca473828",
+    ]
+    supported_network_types = [
+        "IPV4",
+    ]
+    tags                    = {
+        "Name" = "learning-cards-db-subnet-group"
+    }
+    tags_all                = {
+        "Name" = "learning-cards-db-subnet-group"
+    }
+    vpc_id                  = "vpc-07012c40ac13ecd5f"
+}
+
+# aws_eip.nat:
+resource "aws_eip" "nat" {
+    allocation_id            = "eipalloc-06f7c906b1e888a9e"
+    arn                      = "arn:aws:ec2:eu-central-1:988426489572:elastic-ip/eipalloc-06f7c906b1e888a9e"
+    association_id           = "eipassoc-0e53155f44956f28b"
+    carrier_ip               = [90mnull[0m[0m
+    customer_owned_ip        = [90mnull[0m[0m
+    customer_owned_ipv4_pool = [90mnull[0m[0m
+    domain                   = "vpc"
+    id                       = "eipalloc-06f7c906b1e888a9e"
+    instance                 = [90mnull[0m[0m
+    network_border_group     = "eu-central-1"
+    network_interface        = "eni-049d96b81e11a9be0"
+    private_dns              = "ip-10-0-1-119.eu-central-1.compute.internal"
+    private_ip               = "10.0.1.119"
+    ptr_record               = [90mnull[0m[0m
+    public_dns               = "ec2-63-179-74-81.eu-central-1.compute.amazonaws.com"
+    public_ip                = "63.179.74.81"
+    public_ipv4_pool         = "amazon"
+    tags                     = {
+        "Name" = "learning-cards-nat-eip"
+    }
+    tags_all                 = {
+        "Name" = "learning-cards-nat-eip"
+    }
+    vpc                      = true
+}
+
+# aws_iam_role.lambda_role:
+resource "aws_iam_role" "lambda_role" {
+    arn                   = "arn:aws:iam::988426489572:role/learning-cards-lambda-role"
+    assume_role_policy    = jsonencode(
+        {
+            Statement = [
+                {
+                    Action    = "sts:AssumeRole"
+                    Effect    = "Allow"
+                    Principal = {
+                        Service = "lambda.amazonaws.com"
+                    }
+                },
+            ]
+            Version   = "2012-10-17"
+        }
+    )
+    create_date           = "2025-07-28T18:46:42Z"
+    description           = [90mnull[0m[0m
+    force_detach_policies = false
+    id                    = "learning-cards-lambda-role"
+    managed_policy_arns   = []
+    max_session_duration  = 3600
+    name                  = "learning-cards-lambda-role"
+    name_prefix           = [90mnull[0m[0m
+    path                  = "/"
+    permissions_boundary  = [90mnull[0m[0m
+    tags                  = {
+        "Name" = "learning-cards-lambda-role"
+    }
+    tags_all              = {
+        "Name" = "learning-cards-lambda-role"
+    }
+    unique_id             = "AROA6MIWPJ3SLRSUSRLPW"
+
+    inline_policy {
+        name   = "learning-cards-lambda-policy"
+        policy = jsonencode(
+            {
+                Statement = [
+                    {
+                        Action   = [
+                            "logs:CreateLogGroup",
+                            "logs:CreateLogStream",
+                            "logs:PutLogEvents",
+                        ]
+                        Effect   = "Allow"
+                        Resource = "arn:aws:logs:*:*:*"
+                    },
+                    {
+                        Action   = [
+                            "ec2:CreateNetworkInterface",
+                            "ec2:DescribeNetworkInterfaces",
+                            "ec2:DeleteNetworkInterface",
+                        ]
+                        Effect   = "Allow"
+                        Resource = "*"
+                    },
+                    {
+                        Action   = [
+                            "s3:GetObject",
+                            "s3:PutObject",
+                            "s3:DeleteObject",
+                            "s3:ListBucket",
+                        ]
+                        Effect   = "Allow"
+                        Resource = [
+                            "arn:aws:s3:::m3-cas1",
+                            "arn:aws:s3:::m3-cas1/*",
+                        ]
+                    },
+                    {
+                        Action   = [
+                            "rds:DescribeDBClusters",
+                            "rds:DescribeDBInstances",
+                        ]
+                        Effect   = "Allow"
+                        Resource = "*"
+                    },
+                ]
+                Version   = "2012-10-17"
+            }
+        )
+    }
+}
+
+# aws_iam_role_policy.lambda_policy:
+resource "aws_iam_role_policy" "lambda_policy" {
+    id          = "learning-cards-lambda-role:learning-cards-lambda-policy"
+    name        = "learning-cards-lambda-policy"
+    name_prefix = [90mnull[0m[0m
+    policy      = jsonencode(
+        {
+            Statement = [
+                {
+                    Action   = [
+                        "logs:CreateLogGroup",
+                        "logs:CreateLogStream",
+                        "logs:PutLogEvents",
+                    ]
+                    Effect   = "Allow"
+                    Resource = "arn:aws:logs:*:*:*"
+                },
+                {
+                    Action   = [
+                        "ec2:CreateNetworkInterface",
+                        "ec2:DescribeNetworkInterfaces",
+                        "ec2:DeleteNetworkInterface",
+                    ]
+                    Effect   = "Allow"
+                    Resource = "*"
+                },
+                {
+                    Action   = [
+                        "s3:GetObject",
+                        "s3:PutObject",
+                        "s3:DeleteObject",
+                        "s3:ListBucket",
+                    ]
+                    Effect   = "Allow"
+                    Resource = [
+                        "arn:aws:s3:::m3-cas1",
+                        "arn:aws:s3:::m3-cas1/*",
+                    ]
+                },
+                {
+                    Action   = [
+                        "rds:DescribeDBClusters",
+                        "rds:DescribeDBInstances",
+                    ]
+                    Effect   = "Allow"
+                    Resource = "*"
+                },
+            ]
+            Version   = "2012-10-17"
+        }
+    )
+    role        = "learning-cards-lambda-role"
+}
+
+# aws_internet_gateway.main:
+resource "aws_internet_gateway" "main" {
+    arn      = "arn:aws:ec2:eu-central-1:988426489572:internet-gateway/igw-00949c220959de7d6"
+    id       = "igw-00949c220959de7d6"
+    owner_id = "988426489572"
+    tags     = {
+        "Name" = "learning-cards-igw"
+    }
+    tags_all = {
+        "Name" = "learning-cards-igw"
+    }
+    vpc_id   = "vpc-07012c40ac13ecd5f"
+}
+
+# aws_lambda_alias.learning_cards_live:
+resource "aws_lambda_alias" "learning_cards_live" {
+    arn              = "arn:aws:lambda:eu-central-1:988426489572:function:learning-cards-function:live"
+    description      = "Live version of Learning Cards Lambda"
+    function_name    = "learning-cards-function"
+    function_version = "5"
+    id               = "arn:aws:lambda:eu-central-1:988426489572:function:learning-cards-function:live"
+    invoke_arn       = "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:988426489572:function:learning-cards-function:live/invocations"
+    name             = "live"
+}
+
+# aws_lambda_function.app:
+resource "aws_lambda_function" "app" {
+    architectures                  = [
+        "x86_64",
+    ]
+    arn                            = "arn:aws:lambda:eu-central-1:988426489572:function:learning-cards-function"
+    code_sha256                    = "+hCLV62wN783A/jJNMH4U0XcUW9yuT0/KCI5V5+E/PI="
+    code_signing_config_arn        = [90mnull[0m[0m
+    description                    = [90mnull[0m[0m
+    function_name                  = "learning-cards-function"
+    handler                        = "com.shut.LambdaHandler::handleRequest"
+    id                             = "learning-cards-function"
+    image_uri                      = [90mnull[0m[0m
+    invoke_arn                     = "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:988426489572:function:learning-cards-function/invocations"
+    kms_key_arn                    = [90mnull[0m[0m
+    last_modified                  = "2025-07-29T08:35:27.000+0000"
+    layers                         = []
+    memory_size                    = 3008
+    package_type                   = "Zip"
+    publish                        = true
+    qualified_arn                  = "arn:aws:lambda:eu-central-1:988426489572:function:learning-cards-function:5"
+    qualified_invoke_arn           = "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-central-1:988426489572:function:learning-cards-function:5/invocations"
+    reserved_concurrent_executions = -1
+    role                           = "arn:aws:iam::988426489572:role/learning-cards-lambda-role"
+    runtime                        = "java21"
+    s3_bucket                      = "m3-cas1"
+    s3_key                         = "lambda/learning-cards.jar"
+    signing_job_arn                = [90mnull[0m[0m
+    signing_profile_version_arn    = [90mnull[0m[0m
+    skip_destroy                   = false
+    source_code_hash               = "+hCLV62wN783A/jJNMH4U0XcUW9yuT0/KCI5V5+E/PI="
+    source_code_size               = 67186303
+    tags                           = {
+        "Name" = "learning-cards-function"
+    }
+    tags_all                       = {
+        "Name" = "learning-cards-function"
+    }
+    timeout                        = 300
+    version                        = "5"
+
+    environment {
+        variables = {
+            "DB_HOST"          = "learning-cards-aurora-cluster.cluster-c96giu4881ke.eu-central-1.rds.amazonaws.com"
+            "DB_NAME"          = "learningcards"
+            "DB_PASSWORD"      = "learning123!"
+            "DB_PORT"          = "5432"
+            "DB_USER"          = "postgres"
+            "KTOR_CONFIG_FILE" = "application-aws.yaml"
+            "KTOR_ENV"         = "aws"
+            "S3_BUCKET_NAME"   = "m3-cas1"
+        }
+    }
+
+    ephemeral_storage {
+        size = 512
+    }
+
+    logging_config {
+        application_log_level = [90mnull[0m[0m
+        log_format            = "Text"
+        log_group             = "/aws/lambda/learning-cards-function"
+        system_log_level      = [90mnull[0m[0m
+    }
+
+    tracing_config {
+        mode = "PassThrough"
+    }
+
+    vpc_config {
+        ipv6_allowed_for_dual_stack = false
+        security_group_ids          = [
+            "sg-07cb9c4c444b81578",
+        ]
+        subnet_ids                  = [
+            "subnet-042bfeaf2acc43d97",
+            "subnet-0b4952695ca473828",
+        ]
+        vpc_id                      = "vpc-07012c40ac13ecd5f"
+    }
+}
+
+# aws_lambda_permission.api_gateway:
+resource "aws_lambda_permission" "api_gateway" {
+    action              = "lambda:InvokeFunction"
+    function_name       = "learning-cards-function"
+    id                  = "AllowExecutionFromAPIGateway"
+    principal           = "apigateway.amazonaws.com"
+    qualifier           = "live"
+    source_arn          = "arn:aws:execute-api:eu-central-1:988426489572:lcw1eea0ag/*/*"
+    statement_id        = "AllowExecutionFromAPIGateway"
+    statement_id_prefix = [90mnull[0m[0m
+}
+
+# aws_lambda_provisioned_concurrency_config.learning_cards_concurrency:
+resource "aws_lambda_provisioned_concurrency_config" "learning_cards_concurrency" {
+    function_name                     = "learning-cards-function"
+    id                                = "learning-cards-function,5"
+    provisioned_concurrent_executions = 5
+    qualifier                         = "5"
+    skip_destroy                      = false
+}
+
+# aws_nat_gateway.main:
+resource "aws_nat_gateway" "main" {
+    allocation_id                      = "eipalloc-06f7c906b1e888a9e"
+    association_id                     = "eipassoc-0e53155f44956f28b"
+    connectivity_type                  = "public"
+    id                                 = "nat-0ada0df4b0b98e265"
+    network_interface_id               = "eni-049d96b81e11a9be0"
+    private_ip                         = "10.0.1.119"
+    public_ip                          = "63.179.74.81"
+    secondary_allocation_ids           = []
+    secondary_private_ip_address_count = 0
+    secondary_private_ip_addresses     = []
+    subnet_id                          = "subnet-095558c056112f550"
+    tags                               = {
+        "Name" = "learning-cards-nat-gw"
+    }
+    tags_all                           = {
+        "Name" = "learning-cards-nat-gw"
+    }
+}
+
+# aws_rds_cluster.aurora:
+resource "aws_rds_cluster" "aurora" {
+    allocated_storage                     = 1
+    arn                                   = "arn:aws:rds:eu-central-1:988426489572:cluster:learning-cards-aurora-cluster"
+    availability_zones                    = [
+        "eu-central-1a",
+        "eu-central-1b",
+        "eu-central-1c",
+    ]
+    backtrack_window                      = 0
+    backup_retention_period               = 7
+    cluster_identifier                    = "learning-cards-aurora-cluster"
+    cluster_identifier_prefix             = [90mnull[0m[0m
+    cluster_members                       = [
+        "learning-cards-aurora-instance",
+    ]
+    cluster_resource_id                   = "cluster-2T2327D5ZYGV4SCAECLIE3O75Q"
+    cluster_scalability_type              = [90mnull[0m[0m
+    copy_tags_to_snapshot                 = false
+    database_insights_mode                = "standard"
+    database_name                         = "learningcards"
+    db_cluster_instance_class             = [90mnull[0m[0m
+    db_cluster_parameter_group_name       = "default.aurora-postgresql15"
+    db_subnet_group_name                  = "learning-cards-db-subnet-group"
+    db_system_id                          = [90mnull[0m[0m
+    delete_automated_backups              = true
+    deletion_protection                   = false
+    domain                                = [90mnull[0m[0m
+    domain_iam_role_name                  = [90mnull[0m[0m
+    enable_global_write_forwarding        = false
+    enable_http_endpoint                  = false
+    enable_local_write_forwarding         = false
+    enabled_cloudwatch_logs_exports       = []
+    endpoint                              = "learning-cards-aurora-cluster.cluster-c96giu4881ke.eu-central-1.rds.amazonaws.com"
+    engine                                = "aurora-postgresql"
+    engine_lifecycle_support              = "open-source-rds-extended-support"
+    engine_mode                           = "provisioned"
+    engine_version                        = "15.10"
+    engine_version_actual                 = "15.10"
+    global_cluster_identifier             = [90mnull[0m[0m
+    hosted_zone_id                        = "Z1RLNUO7B9Q6NB"
+    iam_database_authentication_enabled   = false
+    iam_roles                             = []
+    id                                    = "learning-cards-aurora-cluster"
+    iops                                  = 0
+    kms_key_id                            = [90mnull[0m[0m
+    master_password                       = (sensitive value)
+    master_password_wo                    = (write-only attribute)
+    master_user_secret                    = []
+    master_username                       = "postgres"
+    monitoring_interval                   = 0
+    monitoring_role_arn                   = [90mnull[0m[0m
+    network_type                          = "IPV4"
+    performance_insights_enabled          = false
+    performance_insights_kms_key_id       = [90mnull[0m[0m
+    performance_insights_retention_period = 0
+    port                                  = 5432
+    preferred_backup_window               = "03:00-04:00"
+    preferred_maintenance_window          = "mon:23:02-mon:23:32"
+    reader_endpoint                       = "learning-cards-aurora-cluster.cluster-ro-c96giu4881ke.eu-central-1.rds.amazonaws.com"
+    replication_source_identifier         = [90mnull[0m[0m
+    skip_final_snapshot                   = true
+    storage_encrypted                     = false
+    storage_type                          = [90mnull[0m[0m
+    tags                                  = {
+        "Name" = "learning-cards-aurora-cluster"
+    }
+    tags_all                              = {
+        "Name" = "learning-cards-aurora-cluster"
+    }
+    vpc_security_group_ids                = [
+        "sg-0c4860685ab950a41",
+    ]
+
+    serverlessv2_scaling_configuration {
+        max_capacity             = 16
+        min_capacity             = 1
+        seconds_until_auto_pause = 0
+    }
+}
+
+# aws_rds_cluster_instance.aurora:
+resource "aws_rds_cluster_instance" "aurora" {
+    arn                                   = "arn:aws:rds:eu-central-1:988426489572:db:learning-cards-aurora-instance"
+    auto_minor_version_upgrade            = true
+    availability_zone                     = "eu-central-1a"
+    ca_cert_identifier                    = "rds-ca-rsa2048-g1"
+    cluster_identifier                    = "learning-cards-aurora-cluster"
+    copy_tags_to_snapshot                 = false
+    custom_iam_instance_profile           = [90mnull[0m[0m
+    db_parameter_group_name               = "default.aurora-postgresql15"
+    db_subnet_group_name                  = "learning-cards-db-subnet-group"
+    dbi_resource_id                       = "db-G43NMZEF2HLFS7VG46QCPCPFCY"
+    endpoint                              = "learning-cards-aurora-instance.c96giu4881ke.eu-central-1.rds.amazonaws.com"
+    engine                                = "aurora-postgresql"
+    engine_version                        = "15.10"
+    engine_version_actual                 = "15.10"
+    force_destroy                         = false
+    id                                    = "learning-cards-aurora-instance"
+    identifier                            = "learning-cards-aurora-instance"
+    identifier_prefix                     = [90mnull[0m[0m
+    instance_class                        = "db.serverless"
+    kms_key_id                            = [90mnull[0m[0m
+    monitoring_interval                   = 0
+    monitoring_role_arn                   = [90mnull[0m[0m
+    network_type                          = "IPV4"
+    performance_insights_enabled          = false
+    performance_insights_kms_key_id       = [90mnull[0m[0m
+    performance_insights_retention_period = 0
+    port                                  = 5432
+    preferred_backup_window               = "03:00-04:00"
+    preferred_maintenance_window          = "tue:00:19-tue:00:49"
+    promotion_tier                        = 0
+    publicly_accessible                   = false
+    storage_encrypted                     = false
+    tags                                  = {
+        "Name" = "learning-cards-aurora-instance"
+    }
+    tags_all                              = {
+        "Name" = "learning-cards-aurora-instance"
+    }
+    writer                                = true
+}
+
+# aws_route_table.private:
+resource "aws_route_table" "private" {
+    arn              = "arn:aws:ec2:eu-central-1:988426489572:route-table/rtb-0e2dbca8e2ef14fae"
+    id               = "rtb-0e2dbca8e2ef14fae"
+    owner_id         = "988426489572"
+    propagating_vgws = []
+    route            = [
+        {
+            carrier_gateway_id         = [90mnull[0m[0m
+            cidr_block                 = "0.0.0.0/0"
+            core_network_arn           = [90mnull[0m[0m
+            destination_prefix_list_id = [90mnull[0m[0m
+            egress_only_gateway_id     = [90mnull[0m[0m
+            gateway_id                 = [90mnull[0m[0m
+            ipv6_cidr_block            = [90mnull[0m[0m
+            local_gateway_id           = [90mnull[0m[0m
+            nat_gateway_id             = "nat-0ada0df4b0b98e265"
+            network_interface_id       = [90mnull[0m[0m
+            transit_gateway_id         = [90mnull[0m[0m
+            vpc_endpoint_id            = [90mnull[0m[0m
+            vpc_peering_connection_id  = [90mnull[0m[0m
+        },
+    ]
+    tags             = {
+        "Name" = "learning-cards-private-rt"
+    }
+    tags_all         = {
+        "Name" = "learning-cards-private-rt"
+    }
+    vpc_id           = "vpc-07012c40ac13ecd5f"
+}
+
+# aws_route_table.public:
+resource "aws_route_table" "public" {
+    arn              = "arn:aws:ec2:eu-central-1:988426489572:route-table/rtb-06f3ba03de2d78cf5"
+    id               = "rtb-06f3ba03de2d78cf5"
+    owner_id         = "988426489572"
+    propagating_vgws = []
+    route            = [
+        {
+            carrier_gateway_id         = [90mnull[0m[0m
+            cidr_block                 = "0.0.0.0/0"
+            core_network_arn           = [90mnull[0m[0m
+            destination_prefix_list_id = [90mnull[0m[0m
+            egress_only_gateway_id     = [90mnull[0m[0m
+            gateway_id                 = "igw-00949c220959de7d6"
+            ipv6_cidr_block            = [90mnull[0m[0m
+            local_gateway_id           = [90mnull[0m[0m
+            nat_gateway_id             = [90mnull[0m[0m
+            network_interface_id       = [90mnull[0m[0m
+            transit_gateway_id         = [90mnull[0m[0m
+            vpc_endpoint_id            = [90mnull[0m[0m
+            vpc_peering_connection_id  = [90mnull[0m[0m
+        },
+    ]
+    tags             = {
+        "Name" = "learning-cards-public-rt"
+    }
+    tags_all         = {
+        "Name" = "learning-cards-public-rt"
+    }
+    vpc_id           = "vpc-07012c40ac13ecd5f"
+}
+
+# aws_route_table_association.private_1:
+resource "aws_route_table_association" "private_1" {
+    gateway_id     = [90mnull[0m[0m
+    id             = "rtbassoc-081dfb53ea2633a87"
+    route_table_id = "rtb-0e2dbca8e2ef14fae"
+    subnet_id      = "subnet-042bfeaf2acc43d97"
+}
+
+# aws_route_table_association.private_2:
+resource "aws_route_table_association" "private_2" {
+    gateway_id     = [90mnull[0m[0m
+    id             = "rtbassoc-01a3bd1598077ea75"
+    route_table_id = "rtb-0e2dbca8e2ef14fae"
+    subnet_id      = "subnet-0b4952695ca473828"
+}
+
+# aws_route_table_association.public_1:
+resource "aws_route_table_association" "public_1" {
+    gateway_id     = [90mnull[0m[0m
+    id             = "rtbassoc-0505a63d282acde3b"
+    route_table_id = "rtb-06f3ba03de2d78cf5"
+    subnet_id      = "subnet-095558c056112f550"
+}
+
+# aws_route_table_association.public_2:
+resource "aws_route_table_association" "public_2" {
+    gateway_id     = [90mnull[0m[0m
+    id             = "rtbassoc-064e10ab7a1be6841"
+    route_table_id = "rtb-06f3ba03de2d78cf5"
+    subnet_id      = "subnet-0e709c1501c63e2d4"
+}
+
+# aws_s3_bucket.cas:
+resource "aws_s3_bucket" "cas" {
+    acceleration_status         = [90mnull[0m[0m
+    arn                         = "arn:aws:s3:::m3-cas1"
+    bucket                      = "m3-cas1"
+    bucket_domain_name          = "m3-cas1.s3.amazonaws.com"
+    bucket_prefix               = [90mnull[0m[0m
+    bucket_regional_domain_name = "m3-cas1.s3.eu-central-1.amazonaws.com"
+    force_destroy               = false
+    hosted_zone_id              = "Z21DNDUVLTQW6Q"
+    id                          = "m3-cas1"
+    object_lock_enabled         = false
+    policy                      = [90mnull[0m[0m
+    region                      = "eu-central-1"
+    request_payer               = "BucketOwner"
+    tags                        = {
+        "Name" = "learning-cards-cas"
+    }
+    tags_all                    = {
+        "Name" = "learning-cards-cas"
+    }
+
+    grant {
+        id          = "f962f34384708688040a81a9e9d6e32cc8fb6a322680a49ff07c9cd1137dcf71"
+        permissions = [
+            "FULL_CONTROL",
+        ]
+        type        = "CanonicalUser"
+        uri         = [90mnull[0m[0m
+    }
+
+    server_side_encryption_configuration {
+        rule {
+            bucket_key_enabled = true
+
+            apply_server_side_encryption_by_default {
+                kms_master_key_id = [90mnull[0m[0m
+                sse_algorithm     = "AES256"
+            }
+        }
+    }
+
+    versioning {
+        enabled    = true
+        mfa_delete = false
+    }
+}
+
+# aws_s3_bucket_versioning.cas:
+resource "aws_s3_bucket_versioning" "cas" {
+    bucket                = "m3-cas1"
+    expected_bucket_owner = [90mnull[0m[0m
+    id                    = "m3-cas1"
+
+    versioning_configuration {
+        mfa_delete = [90mnull[0m[0m
+        status     = "Enabled"
+    }
+}
+
+# aws_s3_object.lambda_jar:
+resource "aws_s3_object" "lambda_jar" {
+    arn                           = "arn:aws:s3:::m3-cas1/lambda/learning-cards.jar"
+    bucket                        = "m3-cas1"
+    bucket_key_enabled            = false
+    cache_control                 = [90mnull[0m[0m
+    checksum_crc32                = [90mnull[0m[0m
+    checksum_crc32c               = [90mnull[0m[0m
+    checksum_crc64nvme            = [90mnull[0m[0m
+    checksum_sha1                 = [90mnull[0m[0m
+    checksum_sha256               = [90mnull[0m[0m
+    content_disposition           = [90mnull[0m[0m
+    content_encoding              = [90mnull[0m[0m
+    content_language              = [90mnull[0m[0m
+    content_type                  = "binary/octet-stream"
+    etag                          = "380bede18dd9446600b6123c4bdb2239-13"
+    force_destroy                 = false
+    id                            = "lambda/learning-cards.jar"
+    key                           = "lambda/learning-cards.jar"
+    metadata                      = {}
+    object_lock_legal_hold_status = [90mnull[0m[0m
+    object_lock_mode              = [90mnull[0m[0m
+    object_lock_retain_until_date = [90mnull[0m[0m
+    server_side_encryption        = "AES256"
+    source                        = "learning-cards.jar"
+    storage_class                 = "STANDARD"
+    tags                          = {}
+    tags_all                      = {}
+    version_id                    = "EOu7ZIhEJ9wpReihXSVVg_NAtNd4TapX"
+    website_redirect              = [90mnull[0m[0m
+}
+
+# aws_security_group.app:
+resource "aws_security_group" "app" {
+    arn                    = "arn:aws:ec2:eu-central-1:988426489572:security-group/sg-0f70bc2ed5bc89400"
+    description            = "Managed by Terraform"
+    egress                 = [
+        {
+            cidr_blocks      = [
+                "0.0.0.0/0",
+            ]
+            description      = [90mnull[0m[0m
+            from_port        = 0
+            ipv6_cidr_blocks = []
+            prefix_list_ids  = []
+            protocol         = "-1"
+            security_groups  = []
+            self             = false
+            to_port          = 0
+        },
+    ]
+    id                     = "sg-0f70bc2ed5bc89400"
+    ingress                = [
+        {
+            cidr_blocks      = [
+                "0.0.0.0/0",
+            ]
+            description      = [90mnull[0m[0m
+            from_port        = 443
+            ipv6_cidr_blocks = []
+            prefix_list_ids  = []
+            protocol         = "tcp"
+            security_groups  = []
+            self             = false
+            to_port          = 443
+        },
+        {
+            cidr_blocks      = [
+                "0.0.0.0/0",
+            ]
+            description      = [90mnull[0m[0m
+            from_port        = 80
+            ipv6_cidr_blocks = []
+            prefix_list_ids  = []
+            protocol         = "tcp"
+            security_groups  = []
+            self             = false
+            to_port          = 80
+        },
+    ]
+    name                   = "learning-cards-app-20250728184655517000000002"
+    name_prefix            = "learning-cards-app-"
+    owner_id               = "988426489572"
+    revoke_rules_on_delete = false
+    tags                   = {
+        "Name" = "learning-cards-app-sg"
+    }
+    tags_all               = {
+        "Name" = "learning-cards-app-sg"
+    }
+    vpc_id                 = "vpc-07012c40ac13ecd5f"
+}
+
+# aws_security_group.lambda:
+resource "aws_security_group" "lambda" {
+    arn                    = "arn:aws:ec2:eu-central-1:988426489572:security-group/sg-07cb9c4c444b81578"
+    description            = "Managed by Terraform"
+    egress                 = [
+        {
+            cidr_blocks      = [
+                "0.0.0.0/0",
+            ]
+            description      = [90mnull[0m[0m
+            from_port        = 0
+            ipv6_cidr_blocks = []
+            prefix_list_ids  = []
+            protocol         = "-1"
+            security_groups  = []
+            self             = false
+            to_port          = 0
+        },
+    ]
+    id                     = "sg-07cb9c4c444b81578"
+    ingress                = []
+    name                   = "learning-cards-lambda-20250728184655514900000001"
+    name_prefix            = "learning-cards-lambda-"
+    owner_id               = "988426489572"
+    revoke_rules_on_delete = false
+    tags                   = {
+        "Name" = "learning-cards-lambda-sg"
+    }
+    tags_all               = {
+        "Name" = "learning-cards-lambda-sg"
+    }
+    vpc_id                 = "vpc-07012c40ac13ecd5f"
+}
+
+# aws_security_group.rds:
+resource "aws_security_group" "rds" {
+    arn                    = "arn:aws:ec2:eu-central-1:988426489572:security-group/sg-0c4860685ab950a41"
+    description            = "Managed by Terraform"
+    egress                 = []
+    id                     = "sg-0c4860685ab950a41"
+    ingress                = [
+        {
+            cidr_blocks      = []
+            from_port        = 5432
+            ipv6_cidr_blocks = []
+            prefix_list_ids  = []
+            protocol         = "tcp"
+            security_groups  = [
+                "sg-0f70bc2ed5bc89400",
+            ]
+            self             = false
+            to_port          = 5432
+        },
+    ]
+    name                   = "learning-cards-rds-20250728184657806200000004"
+    name_prefix            = "learning-cards-rds-"
+    owner_id               = "988426489572"
+    revoke_rules_on_delete = false
+    tags                   = {
+        "Name" = "learning-cards-rds-sg"
+    }
+    tags_all               = {
+        "Name" = "learning-cards-rds-sg"
+    }
+    vpc_id                 = "vpc-07012c40ac13ecd5f"
+}
+
+# aws_security_group_rule.lambda_to_rds:
+resource "aws_security_group_rule" "lambda_to_rds" {
+    from_port                = 5432
+    id                       = "sgrule-1144150864"
+    protocol                 = "tcp"
+    security_group_id        = "sg-0c4860685ab950a41"
+    security_group_rule_id   = "sgr-08548d691babdfc37"
+    self                     = false
+    source_security_group_id = "sg-07cb9c4c444b81578"
+    to_port                  = 5432
+    type                     = "ingress"
+}
+
+# aws_subnet.private_1:
+resource "aws_subnet" "private_1" {
+    arn                                            = "arn:aws:ec2:eu-central-1:988426489572:subnet/subnet-042bfeaf2acc43d97"
+    assign_ipv6_address_on_creation                = false
+    availability_zone                              = "eu-central-1a"
+    availability_zone_id                           = "euc1-az2"
+    cidr_block                                     = "10.0.3.0/24"
+    customer_owned_ipv4_pool                       = [90mnull[0m[0m
+    enable_dns64                                   = false
+    enable_lni_at_device_index                     = 0
+    enable_resource_name_dns_a_record_on_launch    = false
+    enable_resource_name_dns_aaaa_record_on_launch = false
+    id                                             = "subnet-042bfeaf2acc43d97"
+    ipv6_cidr_block                                = [90mnull[0m[0m
+    ipv6_cidr_block_association_id                 = [90mnull[0m[0m
+    ipv6_native                                    = false
+    map_customer_owned_ip_on_launch                = false
+    map_public_ip_on_launch                        = false
+    outpost_arn                                    = [90mnull[0m[0m
+    owner_id                                       = "988426489572"
+    private_dns_hostname_type_on_launch            = "ip-name"
+    tags                                           = {
+        "Name" = "learning-cards-private-1"
+    }
+    tags_all                                       = {
+        "Name" = "learning-cards-private-1"
+    }
+    vpc_id                                         = "vpc-07012c40ac13ecd5f"
+}
+
+# aws_subnet.private_2:
+resource "aws_subnet" "private_2" {
+    arn                                            = "arn:aws:ec2:eu-central-1:988426489572:subnet/subnet-0b4952695ca473828"
+    assign_ipv6_address_on_creation                = false
+    availability_zone                              = "eu-central-1b"
+    availability_zone_id                           = "euc1-az3"
+    cidr_block                                     = "10.0.4.0/24"
+    customer_owned_ipv4_pool                       = [90mnull[0m[0m
+    enable_dns64                                   = false
+    enable_lni_at_device_index                     = 0
+    enable_resource_name_dns_a_record_on_launch    = false
+    enable_resource_name_dns_aaaa_record_on_launch = false
+    id                                             = "subnet-0b4952695ca473828"
+    ipv6_cidr_block                                = [90mnull[0m[0m
+    ipv6_cidr_block_association_id                 = [90mnull[0m[0m
+    ipv6_native                                    = false
+    map_customer_owned_ip_on_launch                = false
+    map_public_ip_on_launch                        = false
+    outpost_arn                                    = [90mnull[0m[0m
+    owner_id                                       = "988426489572"
+    private_dns_hostname_type_on_launch            = "ip-name"
+    tags                                           = {
+        "Name" = "learning-cards-private-2"
+    }
+    tags_all                                       = {
+        "Name" = "learning-cards-private-2"
+    }
+    vpc_id                                         = "vpc-07012c40ac13ecd5f"
+}
+
+# aws_subnet.public_1:
+resource "aws_subnet" "public_1" {
+    arn                                            = "arn:aws:ec2:eu-central-1:988426489572:subnet/subnet-095558c056112f550"
+    assign_ipv6_address_on_creation                = false
+    availability_zone                              = "eu-central-1a"
+    availability_zone_id                           = "euc1-az2"
+    cidr_block                                     = "10.0.1.0/24"
+    customer_owned_ipv4_pool                       = [90mnull[0m[0m
+    enable_dns64                                   = false
+    enable_lni_at_device_index                     = 0
+    enable_resource_name_dns_a_record_on_launch    = false
+    enable_resource_name_dns_aaaa_record_on_launch = false
+    id                                             = "subnet-095558c056112f550"
+    ipv6_cidr_block                                = [90mnull[0m[0m
+    ipv6_cidr_block_association_id                 = [90mnull[0m[0m
+    ipv6_native                                    = false
+    map_customer_owned_ip_on_launch                = false
+    map_public_ip_on_launch                        = true
+    outpost_arn                                    = [90mnull[0m[0m
+    owner_id                                       = "988426489572"
+    private_dns_hostname_type_on_launch            = "ip-name"
+    tags                                           = {
+        "Name" = "learning-cards-public-1"
+    }
+    tags_all                                       = {
+        "Name" = "learning-cards-public-1"
+    }
+    vpc_id                                         = "vpc-07012c40ac13ecd5f"
+}
+
+# aws_subnet.public_2:
+resource "aws_subnet" "public_2" {
+    arn                                            = "arn:aws:ec2:eu-central-1:988426489572:subnet/subnet-0e709c1501c63e2d4"
+    assign_ipv6_address_on_creation                = false
+    availability_zone                              = "eu-central-1b"
+    availability_zone_id                           = "euc1-az3"
+    cidr_block                                     = "10.0.2.0/24"
+    customer_owned_ipv4_pool                       = [90mnull[0m[0m
+    enable_dns64                                   = false
+    enable_lni_at_device_index                     = 0
+    enable_resource_name_dns_a_record_on_launch    = false
+    enable_resource_name_dns_aaaa_record_on_launch = false
+    id                                             = "subnet-0e709c1501c63e2d4"
+    ipv6_cidr_block                                = [90mnull[0m[0m
+    ipv6_cidr_block_association_id                 = [90mnull[0m[0m
+    ipv6_native                                    = false
+    map_customer_owned_ip_on_launch                = false
+    map_public_ip_on_launch                        = true
+    outpost_arn                                    = [90mnull[0m[0m
+    owner_id                                       = "988426489572"
+    private_dns_hostname_type_on_launch            = "ip-name"
+    tags                                           = {
+        "Name" = "learning-cards-public-2"
+    }
+    tags_all                                       = {
+        "Name" = "learning-cards-public-2"
+    }
+    vpc_id                                         = "vpc-07012c40ac13ecd5f"
+}
+
+# aws_vpc.main:
+resource "aws_vpc" "main" {
+    arn                                  = "arn:aws:ec2:eu-central-1:988426489572:vpc/vpc-07012c40ac13ecd5f"
+    assign_generated_ipv6_cidr_block     = false
+    cidr_block                           = "10.0.0.0/16"
+    default_network_acl_id               = "acl-04ddc7bd04be461ea"
+    default_route_table_id               = "rtb-09cd0b3854ab3f2e8"
+    default_security_group_id            = "sg-0601e5c9ad5a0ace5"
+    dhcp_options_id                      = "dopt-0c3228796ce9579e6"
+    enable_dns_hostnames                 = true
+    enable_dns_support                   = true
+    enable_network_address_usage_metrics = false
+    id                                   = "vpc-07012c40ac13ecd5f"
+    instance_tenancy                     = "default"
+    ipv6_association_id                  = [90mnull[0m[0m
+    ipv6_cidr_block                      = [90mnull[0m[0m
+    ipv6_cidr_block_network_border_group = [90mnull[0m[0m
+    ipv6_ipam_pool_id                    = [90mnull[0m[0m
+    ipv6_netmask_length                  = 0
+    main_route_table_id                  = "rtb-09cd0b3854ab3f2e8"
+    owner_id                             = "988426489572"
+    tags                                 = {
+        "Name" = "learning-cards-vpc"
+    }
+    tags_all                             = {
+        "Name" = "learning-cards-vpc"
+    }
+}
+
+# aws_vpc_endpoint.s3:
+resource "aws_vpc_endpoint" "s3" {
+    arn                        = "arn:aws:ec2:eu-central-1:988426489572:vpc-endpoint/vpce-06cc9e92efe38b3af"
+    cidr_blocks                = [
+        "52.219.44.0/22",
+        "52.219.208.0/22",
+        "3.5.136.0/22",
+        "52.219.218.0/24",
+        "52.219.140.0/24",
+        "16.12.32.0/22",
+        "52.219.72.0/22",
+        "16.15.20.0/22",
+        "3.5.134.0/23",
+        "16.12.24.0/21",
+        "52.219.168.0/22",
+    ]
+    dns_entry                  = []
+    id                         = "vpce-06cc9e92efe38b3af"
+    ip_address_type            = [90mnull[0m[0m
+    network_interface_ids      = []
+    owner_id                   = "988426489572"
+    policy                     = jsonencode(
+        {
+            Statement = [
+                {
+                    Action    = "*"
+                    Effect    = "Allow"
+                    Principal = "*"
+                    Resource  = "*"
+                },
+            ]
+            Version   = "2008-10-17"
+        }
+    )
+    prefix_list_id             = "pl-6ea54007"
+    private_dns_enabled        = false
+    requester_managed          = false
+    resource_configuration_arn = [90mnull[0m[0m
+    route_table_ids            = [
+        "rtb-0e2dbca8e2ef14fae",
+    ]
+    security_group_ids         = []
+    service_name               = "com.amazonaws.eu-central-1.s3"
+    service_network_arn        = [90mnull[0m[0m
+    service_region             = "eu-central-1"
+    state                      = "available"
+    subnet_ids                 = []
+    tags                       = {
+        "Name" = "learning-cards-s3-endpoint"
+    }
+    tags_all                   = {
+        "Name" = "learning-cards-s3-endpoint"
+    }
+    vpc_endpoint_type          = "Gateway"
+    vpc_id                     = "vpc-07012c40ac13ecd5f"
+}
+
+
+Outputs:
+
+api_gateway_url = "https://lcw1eea0ag.execute-api.eu-central-1.amazonaws.com"
+aurora_cluster_endpoint = "learning-cards-aurora-cluster.cluster-c96giu4881ke.eu-central-1.rds.amazonaws.com"
+lambda_function_name = "learning-cards-function"
+s3_bucket_name = "m3-cas1"

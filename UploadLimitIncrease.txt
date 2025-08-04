@@ -1,0 +1,22 @@
+  Root cause: Your EC2 setup uses nginx as a reverse proxy (setup-ec2.sh:60-78), but the nginx configuration doesn't set client_max_body_size. Nginx defaults to 1MB for file uploads, while your Ktor app allows 500MB (maxResponseSize: 500000000 in all configs).
+
+  Solution: Add this to your nginx configuration:
+
+  server {
+      listen 80;
+      server_name _;
+
+      # Add this line for 8MB+ uploads
+      client_max_body_size 50M;
+
+      location / {
+          proxy_pass http://localhost:5000;
+          # ... existing proxy settings
+      }
+  }
+
+  To fix on EC2:
+  1. SSH to your EC2 instance
+  2. Edit: sudo nano /etc/nginx/sites-available/learningcards
+  3. Add client_max_body_size 50M; inside the server block
+  4. Restart: sudo systemctl restart nginx

@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Öffentlicher Dossier-Zugang - DMS</title>
+    <link rel="stylesheet" href="../css/dms.css">
+    <link rel="stylesheet" href="../../styles.css">
+    <script type="module" src="../../js/common.js"></script>
+    
+    <style>
+        /* Anonymous page specific styles */
+        .anonymous-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        .anonymous-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        .anonymous-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            margin: 8px 0 0 0;
+        }
+        
+        .anonymous-notice {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .anonymous-notice-icon {
+            font-size: 24px;
+            margin-right: 12px;
+            vertical-align: middle;
+        }
+        
+        .anonymous-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .anonymous-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .dossier-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 30px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .dossier-info {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 20px;
+            align-items: start;
+        }
+        
+        .dossier-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .dossier-name {
+            font-size: 28px;
+            color: #212529;
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .dossier-laufnummer {
+            font-size: 14px;
+            color: #6c757d;
+            font-family: monospace;
+            background: rgba(108, 117, 125, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .dossier-description {
+            color: #495057;
+            font-size: 16px;
+            margin: 12px 0 0 0;
+            line-height: 1.5;
+        }
+        
+        .dossier-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .anonymous-section {
+            padding: 30px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            color: #212529;
+            margin: 0 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .anonymous-upload-zone {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f8f9fa 100%);
+            border: 3px dashed #2196F3;
+            border-radius: 16px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .anonymous-upload-zone:hover {
+            background: linear-gradient(135deg, #bbdefb 0%, #e3f2fd 100%);
+            border-color: #1976d2;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(33, 150, 243, 0.2);
+        }
+        
+        .anonymous-upload-zone.drag-over {
+            background: linear-gradient(135deg, #90caf9 0%, #bbdefb 100%);
+            border-color: #0d47a1;
+            transform: scale(1.02);
+            box-shadow: 0 12px 30px rgba(33, 150, 243, 0.3);
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            color: #2196F3;
+            margin-bottom: 16px;
+        }
+        
+        .upload-text {
+            color: #1565c0;
+            font-size: 18px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        
+        .upload-hint {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .file-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .file-item:hover {
+            background: #e9ecef;
+        }
+        
+        .file-icon {
+            font-size: 24px;
+            width: 40px;
+            text-align: center;
+        }
+        
+        .file-info {
+            flex: 1;
+        }
+        
+        .file-name {
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 4px;
+        }
+        
+        .file-meta {
+            font-size: 12px;
+            color: #6c757d;
+            display: flex;
+            gap: 16px;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-download {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .btn-download:hover {
+            background: #218838;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .modal-header {
+            padding: 20px 30px;
+             border-bottom: 1px solid #dee2e6;
+        }
+        
+        .modal-title {
+            margin: 0;
+            font-size: 20px;
+            color: #212529;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6c757d;
+        }
+        
+        .modal-body {
+            padding: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.2s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+        
+        .modal-footer {
+            padding: 20px 30px;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        
+        .file-preview {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            display: none;
+        }
+        
+        .file-preview.show {
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .dossier-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .dossier-actions {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            
+            .anonymous-container {
+                padding: 0 10px;
+            }
+            
+            .anonymous-section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="anonymous-header">
+        <div class="anonymous-container">
+            <h1 class="anonymous-title">
+                <span>🔓</span>
+                Öffentlicher Dossier-Zugang
+            </h1>
+            <p class="anonymous-subtitle">
+                Anonymer Zugriff auf geteilte Dokumente und Dateien
+            </p>
+        </div>
+    </div>
+
+    <div class="anonymous-container">
+        <div class="anonymous-notice">
+            <span class="anonymous-notice-icon">ℹ️</span>
+            <strong>Hinweis:</strong> Sie greifen anonym auf ein öffentlich geteiltes Dossier zu. 
+            Sie können Dateien herunterladen und neue Dateien hochladen, ohne sich anzumelden.
+        </div>
+
+        <div class="anonymous-content" id="anonymous-content">
+            <div class="loading" id="loading">
+                <div>🔄 Lade Dossier...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div class="modal" id="upload-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">📤 Neue Datei hochladen</h3>
+                <button class="modal-close" onclick="closeModal('upload-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="upload-form">
+                    <div class="form-group">
+                        <label for="document-title">Dokumenttitel</label>
+                        <input type="text" id="document-title" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="document-description">Beschreibung (optional)</label>
+                        <textarea id="document-description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="file-input">Datei auswählen</label>
+                        <input type="file" id="file-input" required>
+                    </div>
+                    <div class="file-preview" id="file-preview">
+                        <div id="file-preview-content"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeModal('upload-modal')">
+                    Abbrechen
+                </button>
+                <button type="button" class="btn-primary" onclick="submitUpload()" id="upload-submit">
+                    Hochladen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file input for drag & drop -->
+    <input type="file" id="hidden-file-input" style="display: none;">
+
+    <script>
+        let currentDossier = null;
+        let anonymousId = null;
+
+        // Get anonymous ID from URL
+        function getAnonymousId() {
+            console.log('getAnonymousId');
+            console.log(window.location.pathname);
+            // Check URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            console.log(urlParams);
+            const dossierID = urlParams.get('dossier');
+            console.log(dossierID);
+            return dossierID;
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            anonymousId = getAnonymousId();
+            
+            if (!anonymousId) {
+                showError('Keine gültige Dossier-ID gefunden.');
+                return;
+            }
+            
+            loadDossier();
+            setupEventListeners();
+        });
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // File input change
+            document.getElementById('file-input')?.addEventListener('change', handleFileSelect);
+            document.getElementById('hidden-file-input')?.addEventListener('change', handleFileSelect);
+            
+            // Form submission
+            document.getElementById('upload-form')?.addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitUpload();
+            });
+            
+            // Close modal on background click
+            document.getElementById('upload-modal')?.addEventListener('click', function(e) {   
+                if (e.target === this) {
+                    closeModal('upload-modal');
+                }
+            });
+        }
+
+        // Load dossier data
+        async function loadDossier() {
+            try {
+                const response = await fetch(`/dms/publicapi/dossier/${anonymousId}`);
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('Dossier nicht gefunden.');
+                    } else if (response.status === 403) {
+                        throw new Error('Dieses Dossier ist nicht öffentlich zugänglich.');
+                    } else {
+                        throw new Error(`Fehler beim Laden: ${response.status}`);
+                    }
+                }
+                
+                const data = await response.json();
+                currentDossier = data.dossier;
+                renderDossier(data);
+                
+            } catch (error) {
+                console.error('Error loading dossier:', error);
+                showError(error.message);
+            }
+        }
+
+        // Render dossier content
+        function renderDossier(data) {
+            const { dossier, documents, childDossiers } = data;
+            
+            const content = `
+                <div class="dossier-header">
+                    <div class="dossier-info">
+                        <div class="dossier-meta">
+                            <h2 class="dossier-name">${escapeHtml(dossier.name || 'Unbenanntes Dossier')}</h2>
+                            <div class="dossier-laufnummer">Laufnummer: ${escapeHtml(dossier.laufnummer)}</div>
+                            ${dossier.beschreibung ? `<p class="dossier-description">${escapeHtml(dossier.beschreibung)}</p>` : ''}
+                            <div class="dossier-date">Erstellt: ${formatDate(dossier.erstellungsdatum)}</div>
+                        </div>
+                        <div class="dossier-actions">
+                            <button class="btn-primary" onclick="openUploadModal()">
+                                📤 Datei hochladen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                ${renderUploadZone()}
+                
+                <div class="anonymous-section">
+                    <h3 class="section-title">
+                        📄 Dokumente (${documents.length})
+                    </h3>
+                    ${renderDocuments(documents)}
+                </div>
+                
+                ${childDossiers.length > 0 ? `
+                <div class="anonymous-section">
+                    <h3 class="section-title">
+                        📁 Unterdossiers (${childDossiers.length})
+                    </h3>
+                    ${renderChildDossiers(childDossiers)}
+                </div>
+                ` : ''}
+            `;
+            
+            document.getElementById('anonymous-content').innerHTML = content;
+            setupDropZone();
+        }
+
+        // Render upload zone
+        function renderUploadZone() {
+            return `
+                <div class="anonymous-section">
+                    <div class="anonymous-upload-zone" id="upload-zone">
+                        <div class="upload-icon">📤</div>
+                        <div class="upload-text">Dateien hierher ziehen oder klicken zum Hochladen</div>
+                        <div class="upload-hint">Alle gängigen Dateiformate werden unterstützt</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Render documents
+        function renderDocuments(documents) {
+            if (documents.length === 0) {
+                return `
+                    <div class="empty-state">
+                        <div class="empty-icon">📄</div>
+                        <p>Noch keine Dokumente vorhanden.</p>
+                        <p>Laden Sie die erste Datei hoch!</p>
+                    </div>
+                `;
+            }
+            
+            return documents.map(doc => `
+                <div class="file-item">
+                    <div class="file-icon">${getFileIcon(doc.titel)}</div>
+                    <div class="file-info">
+                        <div class="file-name">${escapeHtml(doc.titel)}</div>
+                        <div class="file-meta">
+                            <span>Erstellt: ${formatDate(doc.erstellungsdatum)}</span>
+                            <span>Status: ${escapeHtml(doc.status)}</span>
+                            ${doc.beschreibung ? `<span>Beschreibung: ${escapeHtml(doc.beschreibung)}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn-download" onclick="downloadLatestVersion(${doc.id})">
+                            📥 Download
+                        </button>
+                        <button class="btn-secondary" onclick="viewVersions(${doc.id})">
+                            📋 Versionen
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render child dossiers
+        function renderChildDossiers(childDossiers) {
+            return childDossiers.map(child => `
+                <div class="file-item">
+                    <div class="file-icon">📁</div>
+                    <div class="file-info">
+                        <div class="file-name">${escapeHtml(child.name)}</div>
+                        <div class="file-meta">
+                            <span>Laufnummer: ${escapeHtml(child.laufnummer)}</span>
+                            <span>Erstellt: ${formatDate(child.erstellungsdatum)}</span>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn-secondary" onclick="openChildDossier(${child.id})">
+                            📂 Öffnen
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Setup drag & drop
+        function setupDropZone() {
+            const uploadZone = document.getElementById('upload-zone');
+            if (!uploadZone) return;
+            
+            uploadZone.addEventListener('click', () => {
+                document.getElementById('hidden-file-input').click();
+            });
+            
+            uploadZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadZone.classList.add('drag-over');
+            });
+            
+            uploadZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                uploadZone.classList.remove('drag-over');
+            });
+            
+            uploadZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadZone.classList.remove('drag-over');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileSelect({ target: { files } });
+                }
+            });
+        }
+
+        // Handle file selection
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Auto-fill title with filename
+            const title = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+            document.getElementById('document-title').value = title;
+            
+            // Show file preview
+            showFilePreview(file);
+            
+            // Open upload modal
+            openUploadModal();
+        }
+
+        // Show file preview
+        function showFilePreview(file) {
+            const preview = document.getElementById('file-preview');
+            const content = document.getElementById('file-preview-content');
+            
+            content.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="font-size: 24px;">${getFileIcon(file.name)}</div>
+                    <div>
+                        <div style="font-weight: 600;">${escapeHtml(file.name)}</div>
+                        <div style="font-size: 12px; color: #6c757d;">
+                            ${formatFileSize(file.size)} • ${file.type || 'Unbekannter Typ'}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            preview.classList.add('show');
+        }
+
+        // Modal functions
+        function openUploadModal() {
+            document.getElementById('upload-modal').classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+            
+            // Reset form
+            if (modalId === 'upload-modal') {
+                document.getElementById('upload-form').reset();
+                document.getElementById('file-preview').classList.remove('show');
+            }
+        }
+
+        // Submit upload
+        async function submitUpload() {
+            const form = document.getElementById('upload-form');
+            const fileInput = document.getElementById('file-input');
+            const hiddenFileInput = document.getElementById('hidden-file-input');
+            
+            const file = fileInput.files[0] || hiddenFileInput.files[0];
+            const title = document.getElementById('document-title').value;
+            const description = document.getElementById('document-description').value;
+            
+            if (!file || !title) {
+                showError('Bitte wählen Sie eine Datei aus und geben Sie einen Titel ein.');
+                return;
+            }
+            
+            const submitBtn = document.getElementById('upload-submit');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Hochladen...';
+            
+            try {
+                // First upload the file
+                const uploadResponse = await uploadFile(file);
+                if (!uploadResponse.ok) {
+                    throw new Error('Fehler beim Datei-Upload');
+                }
+                
+                const uploadData = await uploadResponse.json();
+                
+                // Then create the document
+                const documentResponse = await fetch(`/dms/publicapi/document/${anonymousId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        dossierId: parseInt(anonymousId),
+                        titel: title,
+                        beschreibung: description
+                    })
+                });
+                
+                if (!documentResponse.ok) {
+                    throw new Error('Fehler beim Erstellen des Dokuments');
+                }
+                
+                const documentData = await documentResponse.json();
+                
+                // Create document version
+                const versionResponse = await fetch(`/dms/publicapi/document/${documentData.id}/version/${anonymousId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        documentId: documentData.id,
+                        dateiname: file.name,
+                        mimeType: file.type,
+                        hashWert: uploadData.hash,
+                        dateigroesse: uploadData.size,
+                        kommentar: 'Anonymer Upload'
+                    })
+                });
+                
+                if (!versionResponse.ok) {
+                    throw new Error('Fehler beim Erstellen der Dokumentversion');
+                }
+                
+                showSuccess('Datei erfolgreich hochgeladen!');
+                closeModal('upload-modal');
+                loadDossier(); // Reload to show new file
+                
+            } catch (error) {
+                console.error('Upload error:', error);
+                showError(error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Hochladen';
+            }
+        }
+
+        // Upload file
+        async function uploadFile(file) {
+            return fetch(`/dms/publicapi/upload/${anonymousId}`, {
+                method: 'POST',
+                headers: {
+                    'X-File-Name': file.name,
+                    'X-File-Type': file.type
+                },
+                body: file
+            });
+        }
+
+        // Download latest version of document
+        async function downloadLatestVersion(documentId) {
+            try {
+                // Get document versions to find the latest
+                const versionsResponse = await fetch(`/dms/publicapi/document/${documentId}/versions/${anonymousId}`);
+                if (!versionsResponse.ok) {
+                    throw new Error('Fehler beim Laden der Versionen');
+                }
+                
+                const versions = await versionsResponse.json();
+                if (versions.length === 0) {
+                    throw new Error('Keine Versionen gefunden');
+                }
+                
+                // Get latest version (highest version number)
+                const latestVersion = versions.reduce((latest, current) => 
+                    current.versionsnummer > latest.versionsnummer ? current : latest
+                );
+                
+                // Download file
+                const downloadUrl = `/dms/publicapi/file/${latestVersion.hashWert}/${anonymousId}`;
+                window.open(downloadUrl, '_blank');
+                
+            } catch (error) {
+                console.error('Download error:', error);
+                showError(error.message);
+            }
+        }
+
+        // View document versions
+        async function viewVersions(documentId) {
+            try {
+                const response = await fetch(`/dms/publicapi/document/${documentId}/versions/${anonymousId}`);
+                if (!response.ok) {
+                    throw new Error('Fehler beim Laden der Versionen');
+                }
+                
+                const versions = await response.json();
+                // For simplicity, just download the latest version
+                // In a full implementation, you'd show a modal with all versions
+                if (versions.length > 0) {
+                    const latestVersion = versions.reduce((latest, current) => 
+                        current.versionsnummer > latest.versionsnummer ? current : latest
+                    );
+                    const downloadUrl = `/dms/publicapi/file/${latestVersion.hashWert}/${anonymousId}`;
+                    window.open(downloadUrl, '_blank');
+                } else {
+                    showError('Keine Versionen gefunden');
+                }
+                
+            } catch (error) {
+                console.error('Versions error:', error);
+                showError(error.message);
+            }
+        }
+
+        // Open child dossier
+        function openChildDossier(childId) {
+            window.location.href = `/dms/public/dossier/${childId}`;
+        }
+
+
+
+        // Utility functions
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatDate(dateString) {
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('de-DE') + ' ' + date.toLocaleTimeString('de-DE', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch {
+                return dateString;
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function getFileIcon(filename) {
+            const ext = filename.toLowerCase().split('.').pop();
+            const iconMap = {
+                'pdf': '📕',
+                'doc': '📘',
+                'docx': '📘',
+                'xls': '📗',
+                'xlsx': '📗',
+                'ppt': '📙',
+                'pptx': '📙',
+                'txt': '📄',
+                'jpg': '🖼️',
+                'jpeg': '🖼️',
+                'png': '🖼️',
+                'gif': '🖼️',
+                'zip': '📦',
+                'rar': '📦'
+            };
+            return iconMap[ext] || '📄';
+        }
+
+        function showError(message) {
+            const content = document.getElementById('anonymous-content');
+            content.innerHTML = `
+                <div class="error">
+                    <strong>Fehler:</strong> ${escapeHtml(message)}
+                </div>
+                <div style="text-align: center; padding: 40px;">
+                    <button class="btn-primary" onclick="loadDossier()">
+                        Erneut versuchen
+                    </button>
+                </div>
+            `;
+        }
+
+        function showSuccess(message) {
+            const existingSuccess = document.querySelector('.success');
+            if (existingSuccess) {
+                existingSuccess.remove();
+            }
+            
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success';
+            successDiv.innerHTML = `<strong>Erfolg:</strong> ${escapeHtml(message)}`;
+            
+            const container = document.querySelector('.anonymous-container');
+            container.insertBefore(successDiv, container.firstElementChild.nextSibling);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                successDiv.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

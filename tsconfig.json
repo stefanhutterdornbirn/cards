@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ES2020",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strict": true,
+    "outDir": "src/main/resources/static/js",
+    "rootDir": "src/main/typescript"
+  },
+  "include": ["src/main/typescript/**/*", "src/main/typescript/dms/**/*", "src/main/typescript/billing/**/*"],
+  "exclude": ["node_modules"]
+}

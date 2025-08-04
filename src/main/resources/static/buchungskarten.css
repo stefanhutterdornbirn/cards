@@ -1,0 +1,673 @@
+/* Buchungskarten Styles */
+
+/* Container und Layout */
+.buchungskarten-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 25px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(33, 150, 243, 0.4);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 25px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(244, 67, 54, 0.3);
+}
+
+.btn-danger:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(244, 67, 54, 0.4);
+}
+
+.btn-small {
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.btn-pdf {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+}
+
+.btn-pdf:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.4);
+}
+
+.btn-delete {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(244, 67, 54, 0.3);
+}
+
+.btn-delete:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(244, 67, 54, 0.4);
+}
+
+.btn-group {
+    display: flex;
+    gap: 8px;
+}
+
+/* Karten */
+.evaluation-card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    padding: 30px;
+    margin-bottom: 20px;
+    border: 2px solid #4CAF50;
+}
+
+.evaluation-list-item {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 15px;
+    border: 1px solid #e9ecef;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.evaluation-list-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.evaluation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.evaluation-title {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #2c3e50;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.evaluation-title-small {
+    margin: 0 0 8px 0;
+    color: #2c3e50;
+}
+
+.evaluation-subtitle {
+    margin: 0;
+    color: #6c757d;
+}
+
+.evaluation-stats {
+    text-align: right;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.evaluation-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+/* Zeitraum Info */
+.zeitraum-info {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+/* Statistik Karten */
+.statistik-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.statistik-card {
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;
+}
+
+.statistik-card:hover {
+    transform: translateY(-5px);
+}
+
+.statistik-card h4 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.statistik-card .value {
+    font-size: 28px;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.statistik-card .additional {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+/* Statistik Farben */
+.statistik-einnahmen {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+}
+
+.statistik-ausgaben {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+}
+
+.statistik-saldo-positive {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+}
+
+.statistik-saldo-negative {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+}
+
+.statistik-ausgangs-ust {
+    background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+}
+
+.statistik-eingangs-ust {
+    background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+}
+
+.statistik-ust-saldo-positive {
+    background: linear-gradient(135deg, #3F51B5 0%, #303F9F 100%);
+}
+
+.statistik-ust-saldo-negative {
+    background: linear-gradient(135deg, #E91E63 0%, #C2185B 100%);
+}
+
+/* Buchungen Liste */
+.buchungen-list-container {
+    display: none;
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.buchungen-scroll-container {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+}
+
+.buchung-item {
+    background: white;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 8px;
+    border: 1px solid #e9ecef;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.buchung-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.buchung-item.einnahme {
+    border-left: 4px solid #4CAF50;
+}
+
+.buchung-item.ausgabe {
+    border-left: 4px solid #f44336;
+}
+
+.buchung-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.buchung-date {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.buchung-amount {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.buchung-amount.einnahme {
+    color: #4CAF50;
+}
+
+.buchung-amount.ausgabe {
+    color: #f44336;
+}
+
+.buchung-description {
+    color: #6c757d;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.buchung-details {
+    display: flex;
+    gap: 15px;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.buchung-category {
+    background: #e9ecef;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.buchung-stats {
+    margin-top: 15px;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.buchung-stat {
+    padding: 8px 15px;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 13px;
+}
+
+.buchung-stat.einnahmen {
+    background-color: rgba(76, 175, 80, 0.1);
+    border: 1px solid #4CAF50;
+}
+
+.buchung-stat.ausgaben {
+    background-color: rgba(244, 67, 54, 0.1);
+    border: 1px solid #f44336;
+}
+
+.buchung-stat-title {
+    font-weight: bold;
+}
+
+.buchung-stat-value {
+    color: #2e7d32;
+}
+
+.buchung-stat.ausgaben .buchung-stat-value {
+    color: #c62828;
+}
+
+/* Tabellen */
+.buchungen-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.buchungen-table th {
+    background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+    color: white;
+    padding: 15px 10px;
+    text-align: left;
+    font-weight: bold;
+    font-size: 14px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.buchungen-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.buchungen-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.buchungen-table tr.einnahme {
+    background-color: rgba(76, 175, 80, 0.05);
+}
+
+.buchungen-table tr.ausgabe {
+    background-color: rgba(244, 67, 54, 0.05);
+}
+
+.buchungen-table .amount {
+    font-weight: bold;
+    text-align: right;
+}
+
+.buchungen-table .amount.einnahme {
+    color: #4CAF50;
+}
+
+.buchungen-table .amount.ausgabe {
+    color: #f44336;
+}
+
+.buchungen-table .document-link {
+    color: #2196F3;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.buchungen-table .document-link:hover {
+    text-decoration: underline;
+}
+
+/* Formulare */
+.form-container {
+    background: white;
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+/* Notifications */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    z-index: 10000;
+    transition: opacity 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.notification.success {
+    background-color: #4CAF50;
+}
+
+.notification.error {
+    background-color: #f44336;
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* PDF Modal */
+.pdf-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pdf-modal-content {
+    background-color: #fff;
+    border-radius: 10px;
+    width: 90%;
+    height: 90%;
+    max-width: 1200px;
+    max-height: 800px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.pdf-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.pdf-modal-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.pdf-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #6c757d;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.pdf-modal-close:hover {
+    background-color: #f8f9fa;
+    color: #dc3545;
+}
+
+.pdf-modal-body {
+    padding: 20px;
+    height: calc(100% - 80px);
+}
+
+.pdf-embed {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 5px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .statistik-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .evaluation-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .evaluation-actions {
+        align-items: center;
+        width: 100%;
+    }
+    
+    .btn-group {
+        justify-content: center;
+    }
+    
+    .form-row {
+        flex-direction: column;
+    }
+    
+    .pdf-modal-content {
+        width: 95%;
+        height: 95%;
+    }
+}
+
+/* Utility Classes */
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-success {
+    color: #4CAF50;
+}
+
+.text-danger {
+    color: #f44336;
+}
+
+.text-muted {
+    color: #6c757d;
+}
+
+.font-weight-bold {
+    font-weight: bold;
+}
+
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 1rem; }
+.mt-4 { margin-top: 1.5rem; }
+.mt-5 { margin-top: 3rem; }
+
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+.mb-5 { margin-bottom: 3rem; }
+
+.ml-1 { margin-left: 0.25rem; }
+.ml-2 { margin-left: 0.5rem; }
+.ml-3 { margin-left: 1rem; }
+
+.mr-1 { margin-right: 0.25rem; }
+.mr-2 { margin-right: 0.5rem; }
+.mr-3 { margin-right: 1rem; }
+
+.d-flex { display: flex; }
+.d-none { display: none; }
+.d-block { display: block; }
+
+.justify-content-center { justify-content: center; }
+.justify-content-between { justify-content: space-between; }
+.align-items-center { align-items: center; }
+
+.gap-1 { gap: 0.25rem; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 1rem; }

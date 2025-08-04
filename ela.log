@@ -1,0 +1,126 @@
+Events:
+- ApplicationName: learning-cards
+  EnvironmentName: learning-cards-env
+  EventDate: '2025-07-29T10:49:00.759000+00:00'
+  Message: Environment health has transitioned from Degraded to Severe. 100.0 % of
+    the requests are failing with HTTP 5xx. ELB processes are not healthy on all instances.
+    ELB health is failing or not available for all instances.
+  Severity: WARN
+  VersionLabel: learning-cards-v1.0.0
+- ApplicationName: learning-cards
+  EnvironmentName: learning-cards-env
+  EventDate: '2025-07-29T10:48:00.856000+00:00'
+  Message: Added instance [i-00ced7537e2a11a30] to your environment.
+  Severity: INFO
+  VersionLabel: learning-cards-v1.0.0
+- ApplicationName: learning-cards
+  EnvironmentName: learning-cards-env
+  EventDate: '2025-07-29T10:48:00.856000+00:00'
+  Message: Environment health has transitioned from Pending to Degraded. Initialization
+    completed 17 seconds ago and took 3 minutes. Impaired services on all instances.
+  Severity: WARN
+  VersionLabel: learning-cards-v1.0.0
+- ApplicationName: learning-cards
+  EnvironmentName: learning-cards-env
+  EventDate: '2025-07-29T10:47:08.461000+00:00'
+  Message: 'Successfully launched environment: learning-cards-env'
+  RequestId: 4ed598bc-ec18-4de0-a80d-264fba0d3af8
+  Severity: INFO
+- ApplicationName: learning-cards
+  EnvironmentName: learning-cards-env
+  EventDate: '2025-07-29T10:47:07.674000+00:00'
+  Message: Application available at learning-cards-env.eba-cxprhfwd.eu-central-1.elasticbeanstalk.com.
+  RequestId: 4ed598bc-ec18-4de0-a80d-264fba0d3af8
+  Severity: INFO
+- ApplicationName: learning-cards
+  EnvironmentName: learning-cards-env
+  EventDate: '2025-07-29T10:46:54.161000+00:00'
+  Message: Instance deployment completed successfully.
+  RequestId: 4ed598bc-ec18-4de0-a80d-264fba0d3af8
+  Severity: INFO
+- ApplicationName: learning-cards
+  EnvironmentName: learning-cards-env
+  EventDate: '2025-07-29T10:46:49.858000+00:00'
+  Message: Instance deployment successfully generated a 'Procfile'.
+  RequestId: 4ed598bc-ec18-4de0-a80d-264fba0d3af8
+  Severity: INFO
+- ApplicationName: learning-cards
+  EnvironmentName: learning-cards-env
+  EventDate: '2025-07-29T10:46:45.161000+00:00'
+  Message: 'Created Load Balancer listener named: arn:aws:elasticloadbalancing:eu-central-1:988426489572:listener/app/awseb--AWSEB-gUFgFwmR0N2t/c3828b6fb77b00da/fb6174c737b9ca51'
+  RequestId: 4ed598bc-ec18-4de0-a80d-264fba0d3af8
+  Severity: INFO
+- ApplicationName: learning-cards
+  EnvironmentName: learning-cards-env
+  EventDate: '2025-07-29T10:46:42.795000+00:00'
+  Message: 'Created load balancer named: arn:aws:elasticloadbalancing:eu-central-1:988426489572:loadbalancer/app/awseb--AWSEB-gUFgFwmR0N2t/c3828b6fb77b00da'
+  RequestId: 4ed598bc-ec18-4de0-a80d-264fba0d3af8
+  Severity: INFO
+- ApplicationName: learning-cards
+  EnvironmentName: learning-cards-env
+  EventDate: '2025-07-29T10:44:55.609000+00:00'
+  Message: 'Created CloudWatch alarm named: awseb-e-mxymmmgm9i-stack-AWSEBCloudwatchAlarmLow-pS4GcQyrhaYU'
+  RequestId: 4ed598bc-ec18-4de0-a80d-264fba0d3af8
+  Severity: INFO
+- ApplicationName: learning-cards
+  EnvironmentName: learning-cards-env
+  EventDate: '2025-07-29T10:44:55.588000+00:00'
+  Message: 'Created CloudWatch alarm named: awseb-e-mxymmmgm9i-stack-AWSEBCloudwatchAlarmHigh-wm31pdPz0jku'
+  RequestId: 4ed598bc-ec18-4de0-a80d-264fba0d3af8
+  Severity: INFO
+- ApplicationName: learning-cards
+  EnvironmentName: learning-cards-env
+  EventDate: '2025-07-29T10:44:55.565000+00:00'
+  Message: 'Created Auto Scaling group policy named: arn:aws:autoscaling:eu-central-1:988426489572:scalingPolicy:6238561d-1a1b-4c16-9b6d-196d52ee41e3:autoScalingGroupName/awseb-e-mxymmmgm9i-stack-AWSEBAutoScalingGroup-UIyU4YMkBXqB:policyName/awseb-e-mxymmmgm9i-stack-AWSEBAutoScalingScaleDownPolicy-qEmYMI4TBsZK'
+  RequestId: 4ed598bc-ec18-4de0-a80d-264fba0d3af8
+  Severity: INFO
+- ApplicationName: learning-cards
+  EnvironmentName: learning-cards-env
+  EventDate: '2025-07-29T10:44:55.513000+00:00'
+  Message: 'Created Auto Scaling group policy named: arn:aws:autoscaling:eu-central-1:988426489572:scalingPolicy:16178d0e-ac01-4121-b3f8-09ab44cf7c0e:autoScalingGroupName/awseb-e-mxymmmgm9i-stack-AWSEBAutoScalingGroup-UIyU4YMkBXqB:policyName/awseb-e-mxymmmgm9i-stack-AWSEBAutoScalingScaleUpPolicy-R3x8e7DMKMBH'
+  RequestId: 4ed598bc-ec18-4de0-a80d-264fba0d3af8
+  Severity: INFO
+- ApplicationName: learning-cards
+  EnvironmentName: learning-cards-env
+  EventDate: '2025-07-29T10:44:40.137000+00:00'
+  Message: Waiting for EC2 instances to launch. This may take a few minutes.
+  RequestId: 4ed598bc-ec18-4de0-a80d-264fba0d3af8
+  Severity: INFO
+- ApplicationName: learning-cards
+  EnvironmentName: learning-cards-env
+  EventDate: '2025-07-29T10:44:40.070000+00:00'
+  Message: 'Created Auto Scaling group named: awseb-e-mxymmmgm9i-stack-AWSEBAutoScalingGroup-UIyU4YMkBXqB'
+  RequestId: 4ed598bc-ec18-4de0-a80d-264fba0d3af8
+  Severity: INFO
+- ApplicationName: learning-cards
+  EnvironmentName: learning-cards-env
+  EventDate: '2025-07-29T10:44:24.722000+00:00'
+  Message: 'Created security group named: sg-056b2f1d867aba137'
+  RequestId: 4ed598bc-ec18-4de0-a80d-264fba0d3af8
+  Severity: INFO
+- ApplicationName: learning-cards
+  EnvironmentName: learning-cards-env
+  EventDate: '2025-07-29T10:44:24.679000+00:00'
+  Message: 'Created target group named: arn:aws:elasticloadbalancing:eu-central-1:988426489572:targetgroup/awseb-AWSEB-EOTR8UA8GOYJ/e4a6e26f4b7b1f17'
+  RequestId: 4ed598bc-ec18-4de0-a80d-264fba0d3af8
+  Severity: INFO
+- ApplicationName: learning-cards
+  EnvironmentName: learning-cards-env
+  EventDate: '2025-07-29T10:44:09.109000+00:00'
+  Message: 'Created security group named: sg-0cc7f63956f255714'
+  RequestId: 4ed598bc-ec18-4de0-a80d-264fba0d3af8
+  Severity: INFO
+- ApplicationName: learning-cards
+  EnvironmentName: learning-cards-env
+  EventDate: '2025-07-29T10:44:01.198000+00:00'
+  Message: Environment health has transitioned to Pending. Initialization in progress
+    (running for 5 seconds). There are no instances.
+  Severity: INFO
+- ApplicationName: learning-cards
+  EnvironmentName: learning-cards-env
+  EventDate: '2025-07-29T10:43:46.890000+00:00'
+  Message: Using elasticbeanstalk-eu-central-1-988426489572 as Amazon S3 storage bucket
+    for environment data.
+  RequestId: 4ed598bc-ec18-4de0-a80d-264fba0d3af8
+  Severity: INFO
+NextToken: MTc1Mzc4NTgyNTcyMTo6MDo6MTc1Mzc4ODAwNjg3OQ==

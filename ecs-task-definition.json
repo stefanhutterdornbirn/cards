@@ -1,0 +1,84 @@
+{
+    "family": "learning-cards-task",
+    "networkMode": "awsvpc",
+    "requiresCompatibilities": ["FARGATE"],
+    "cpu": "512",
+    "memory": "1024",
+    "executionRoleArn": "arn:aws:iam::YOUR_ACCOUNT_ID:role/ecsTaskExecutionRole",
+    "taskRoleArn": "arn:aws:iam::YOUR_ACCOUNT_ID:role/LearningCardsTaskRole",
+    "containerDefinitions": [
+        {
+            "name": "learning-cards-app",
+            "image": "YOUR_ACCOUNT_ID.dkr.ecr.eu-central-1.amazonaws.com/learning-cards-app:latest",
+            "portMappings": [
+                {
+                    "containerPort": 80,
+                    "protocol": "tcp"
+                }
+            ],
+            "essential": true,
+            "environment": [
+                {
+                    "name": "DB_HOST",
+                    "value": "learning-cards-db.YOUR_RDS_ENDPOINT"
+                },
+                {
+                    "name": "DB_PORT",
+                    "value": "5432"
+                },
+                {
+                    "name": "DB_NAME",
+                    "value": "learningcards"
+                },
+                {
+                    "name": "DB_USER",
+                    "value": "postgres"
+                },
+                {
+                    "name": "S3_BUCKET_NAME",
+                    "value": "m3-cas1"
+                },
+                {
+                    "name": "AWS_REGION",
+                    "value": "eu-central-1"
+                },
+                {
+                    "name": "JWT_DOMAIN",
+                    "value": "https://your-domain.com/"
+                },
+                {
+                    "name": "JWT_AUDIENCE",
+                    "value": "learning-cards-audience"
+                },
+                {
+                    "name": "JWT_REALM",
+                    "value": "Learning Cards App"
+                }
+            ],
+            "secrets": [
+                {
+                    "name": "DB_PASSWORD",
+                    "valueFrom": "arn:aws:secretsmanager:eu-central-1:YOUR_ACCOUNT_ID:secret:learning-cards/db-password-XXXXXX"
+                }
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/learning-cards",
+                    "awslogs-region": "eu-central-1",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            "healthCheck": {
+                "command": [
+                    "CMD-SHELL",
+                    "curl -f http://localhost:80/health || exit 1"
+                ],
+                "interval": 30,
+                "timeout": 5,
+                "retries": 3,
+                "startPeriod": 60
+            }
+        }
+    ]
+}

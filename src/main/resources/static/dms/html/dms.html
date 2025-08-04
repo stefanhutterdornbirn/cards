@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card DMS - Dokumentenmanagement</title>
+    <link rel="stylesheet" href="../css/dms.css">
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../../billing/css/billing.css">
+    <script type="module" src="../../js/common.js"></script>
+    <script type="module" src="../../js/LegalPages.js"></script>
+    
+    <style>
+        /* Enhanced styling for new version upload */
+        .dms-version-upload-zone {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f8f9fa 100%) !important;
+            border: 3px dashed #2196F3 !important;
+            border-radius: 16px !important;
+            padding: 40px 20px !important;
+            min-height: 180px !important;
+            transition: all 0.3s ease !important;
+            cursor: pointer !important;
+            position: relative !important;
+            overflow: hidden !important;
+        }
+        
+        .dms-version-upload-zone:hover {
+            background: linear-gradient(135deg, #bbdefb 0%, #e3f2fd 100%) !important;
+            border-color: #1976d2 !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 25px rgba(33, 150, 243, 0.2) !important;
+        }
+        
+        .dms-version-upload-zone.dms-drag-over {
+            background: linear-gradient(135deg, #90caf9 0%, #bbdefb 100%) !important;
+            border-color: #0d47a1 !important;
+            transform: scale(1.02) !important;
+            box-shadow: 0 12px 30px rgba(33, 150, 243, 0.3) !important;
+        }
+        
+        .dms-version-upload-zone::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #2196F3, #21CBF3, #2196F3);
+            border-radius: 16px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .dms-version-upload-zone:hover::before {
+            opacity: 0.1;
+        }
+        
+        .dms-version-upload-zone .dms-upload-icon {
+            font-size: 48px !important;
+            color: #2196F3 !important;
+            margin-bottom: 16px !important;
+            filter: drop-shadow(0 2px 4px rgba(33, 150, 243, 0.3));
+        }
+        
+        .dms-version-upload-zone .dms-upload-primary {
+            font-size: 18px !important;
+            color: #1565c0 !important;
+            margin-bottom: 12px !important;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+        }
+        
+        .dms-version-upload-zone .dms-version-info {
+            font-size: 16px !important;
+            color: #2196F3 !important;
+            background: rgba(33, 150, 243, 0.1) !important;
+            padding: 12px 24px !important;
+            border-radius: 25px !important;
+            margin: 16px auto !important;
+            display: inline-block !important;
+            border: 1px solid rgba(33, 150, 243, 0.3) !important;
+            font-weight: 600 !important;
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15) !important;
+        }
+        
+        .dms-version-upload-zone .dms-upload-formats {
+            font-size: 12px !important;
+            color: #666 !important;
+            margin-top: 12px !important;
+            opacity: 0.8 !important;
+        }
+        
+        /* Animation for better user experience */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(33, 150, 243, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(33, 150, 243, 0); }
+        }
+        
+        .dms-version-upload-zone:active {
+            animation: pulse 0.6s;
+        }
+        
+        /* Enhanced file preview for version uploads */
+        .dms-version-file-preview {
+            background: linear-gradient(135deg, #e8f5e8 0%, #f8f9fa 100%) !important;
+            border: 2px solid #4caf50 !important;
+            border-radius: 12px !important;
+            padding: 20px !important;
+        }
+
+        /* Version History Table Styles */
+        .dms-versions-table-container {
+            overflow-x: auto;
+            margin-top: 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .dms-versions-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            font-size: 14px;
+        }
+
+        .dms-versions-table th {
+            background: linear-gradient(135deg, #f5f5f5 0%, #e9ecef 100%);
+            color: #495057;
+            font-weight: 600;
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+            white-space: nowrap;
+        }
+
+        .dms-versions-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: middle;
+        }
+
+        .dms-version-row:hover {
+            background-color: #f8f9fa;
+        }
+
+        .dms-version-row.dms-current-version {
+            background-color: rgba(40, 167, 69, 0.08);
+        }
+
+        .dms-version-row.dms-current-version:hover {
+            background-color: rgba(40, 167, 69, 0.12);
+        }
+
+        .dms-version-badge {
+            background: #6c757d;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .dms-current-version .dms-version-badge {
+            background: #28a745;
+        }
+
+        .dms-file-info-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dms-file-details .dms-file-name {
+            font-weight: 500;
+            color: #212529;
+        }
+
+        .dms-file-details .dms-file-type {
+            font-size: 11px;
+            color: #6c757d;
+        }
+
+        .dms-date-info .dms-date {
+            font-weight: 500;
+            color: #212529;
+        }
+
+        .dms-date-info .dms-time {
+            font-size: 11px;
+            color: #6c757d;
+        }
+
+        .dms-comment-text {
+            font-style: italic;
+            color: #495057;
+            max-width: 200px;
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .dms-status-current {
+            background: #28a745;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .dms-status-archived {
+            background: #6c757d;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .dms-version-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .dms-btn-download {
+            background: #17a2b8 !important;
+            color: white !important;
+        }
+
+        .dms-btn-download:hover {
+            background: #138496 !important;
+        }
+
+        .dms-btn-restore {
+            background: #ffc107 !important;
+            color: #212529 !important;
+        }
+
+        .dms-btn-restore:hover {
+            background: #e0a800 !important;
+        }
+        
+        /* Language Switcher Styling */
+        .dms-language-switcher {
+            margin-right: 15px;
+        }
+        
+        .dms-language-select {
+            background: #ffffff;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 14px;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 140px;
+        }
+        
+        .dms-language-select:hover {
+            border-color: #007bff;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
+        }
+        
+        .dms-language-select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        /* Version History Modal Enhancements */
+        .dms-version-history-header {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .dms-version-history-header h4 {
+            margin: 0 0 8px 0;
+            color: #212529;
+            font-size: 18px;
+        }
+
+        .dms-document-meta {
+            margin: 0;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .dms-version-history-footer {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .dms-version-legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .dms-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Metadata Edit Form Styles */
+        .dms-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .dms-edit-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dms-metadata-form {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+
+        .dms-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .dms-form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dms-form-group label {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #495057;
+        }
+
+        .dms-form-group input,
+        .dms-form-group select,
+        .dms-form-group textarea {
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .dms-form-group input:focus,
+        .dms-form-group select:focus,
+        .dms-form-group textarea:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .dms-readonly-input {
+            background-color: #e9ecef !important;
+            color: #6c757d !important;
+            cursor: not-allowed;
+        }
+
+        .dms-form-full-width {
+            grid-column: 1 / -1;
+        }
+
+        .dms-form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding-top: 16px;
+            border-top: 1px solid #dee2e6;
+        }
+
+        /* Document Status Color Coding */
+        .dms-status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+        }
+
+        /* Status Colors */
+        .dms-status-entwurf {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .dms-status-in.bearbeitung,
+        .dms-status-in-bearbeitung {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .dms-status-zur.freigabe,
+        .dms-status-zur-freigabe {
+            background-color: #ffc107;
+            color: #212529;
+            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+        }
+
+        .dms-status-freigegeben {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .dms-status-archiviert {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        /* Animated highlight for "Zur Freigabe" */
+        .dms-status-zur.freigabe,
+        .dms-status-zur-freigabe {
+            animation: statusPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes statusPulse {
+            0% { box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3); }
+            50% { box-shadow: 0 4px 16px rgba(255, 193, 7, 0.6); }
+            100% { box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3); }
+        }
+
+        /* Status in form dropdown - color preview */
+        .dms-status-select {
+            position: relative;
+        }
+
+        .dms-status-select::after {
+            content: '';
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* Status indicator colors for dropdown */
+        .dms-status-select[data-status="Entwurf"]::after {
+            background-color: #6c757d;
+        }
+
+        .dms-status-select[data-status="In Bearbeitung"]::after {
+            background-color: #007bff;
+        }
+
+        .dms-status-select[data-status="Zur Freigabe"]::after {
+            background-color: #ffc107;
+            box-shadow: 0 0 6px rgba(255, 193, 7, 0.6);
+        }
+
+        .dms-status-select[data-status="Freigegeben"]::after {
+            background-color: #28a745;
+        }
+
+        .dms-status-select[data-status="Archiviert"]::after {
+            background-color: #dc3545;
+        }
+
+
+        .form-row {
+  display: flex;
+  align-items: center; /* This centers the checkbox vertically with the text */
+  gap: 10px; /* Optional: adds a little space between the label and the checkbox */
+}
+
+        /* Share Link Modal Styles */
+        .dms-share-info {
+            padding: 0;
+        }
+        
+        .dms-share-header {
+            margin-bottom: 24px;
+        }
+        
+        .dms-share-header h4 {
+            margin: 0 0 12px 0;
+            color: #212529;
+            font-size: 18px;
+        }
+        
+        .dms-share-description {
+            color: #6c757d;
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 0;
+        }
+        
+        .dms-share-toggle {
+            margin-bottom: 24px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .dms-toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .dms-toggle-label input[type="checkbox"] {
+            display: none;
+        }
+        
+        .dms-toggle-slider {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            background: #ccc;
+            border-radius: 24px;
+            transition: background 0.3s ease;
+        }
+        
+        .dms-toggle-slider::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+        
+        .dms-toggle-label input[type="checkbox"]:checked + .dms-toggle-slider {
+            background: #28a745;
+        }
+        
+        .dms-toggle-label input[type="checkbox"]:checked + .dms-toggle-slider::before {
+            transform: translateX(26px);
+        }
+        
+        .dms-share-link-section {
+            margin-bottom: 24px;
+        }
+        
+        .dms-share-link-info {
+            margin-bottom: 20px;
+        }
+        
+        .dms-share-link-info label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .dms-share-link-container {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .dms-share-link-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background: #f8f9fa;
+            font-family: monospace;
+            font-size: 13px;
+            color: #495057;
+        }
+        
+        .dms-share-warning {
+            display: flex;
+            gap: 12px;
+            padding: 16px;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            color: #856404;
+        }
+        
+        .dms-warning-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .dms-warning-text {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .dms-share-disabled-info {
+            display: flex;
+            gap: 12px;
+            padding: 16px;
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            color: #0c5460;
+        }
+        
+        .dms-info-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .dms-info-text {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        /* Responsive form layout */
+        @media (max-width: 768px) {
+            .dms-form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dms-section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            
+            .dms-share-link-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .dms-share-link-container button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dms-container">
+        <!-- Header -->
+        <header class="dms-header">
+            <div class="dms-header-left">
+                <h1 class="dms-title">
+                    <span class="dms-icon">📁</span>
+                    Card DMS
+                </h1>
+                <a href="/index.html" class="dms-back-link">
+                    ← <span data-i18n="dms.backToMain">Zurück zur Hauptanwendung</span>
+                </a>
+            </div>
+            <div class="dms-header-right">
+                <!-- Language Switcher -->
+                <div class="dms-language-switcher" id="dms-language-switcher">
+                    <select id="dms-language-select" class="dms-language-select" onchange="switchLanguage(this.value)">
+                        <option value="de">🇩🇪 Deutsch</option>
+                        <option value="en">🇬🇧 English</option>
+                        <option value="fr">🇫🇷 Français</option>
+                        <option value="nl">🇳🇱 Nederlands</option>
+                    </select>
+                </div>
+                
+                <!-- User Account Information -->
+                <div class="dms-user-info" id="dms-user-info" style="display: none;">
+                    <span class="dms-user-account" id="dms-user-account">
+                        👤 <span id="dms-username">Loading...</span>
+                        <span id="dms-cardcoin-balance" class="dms-cardcoin-display">0.0000 CardCoins</span>
+                    </span>
+                    <button class="dms-btn dms-btn-secondary" onclick="logout()" title="Logout">
+                        🚪 <span data-i18n="auth.logout">Logout</span>
+                    </button>
+                </div>
+                
+                <button class="dms-btn dms-btn-secondary" onclick="window.dmsManager?.refreshCurrentView()">
+                    🔄 <span data-i18n="common.refresh">Aktualisieren</span>
+                </button>
+                <span class="dms-btn dms-btn-secondary" onclick="window.dmsManager?.testUpload()" style="cursor: pointer; user-select: none;">
+                    📤 <span data-i18n="common.upload">Hochladen</span>
+                </span>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="dms-main">
+            <!-- Sidebar -->
+            <aside class="dms-sidebar">
+                <div class="dms-sidebar-section">
+                    <h3 data-i18n="nav.navigation">Navigation</h3>
+                    <ul class="dms-nav-list">
+                        <li class="dms-nav-item active">
+                            <a href="#" class="dms-nav-link">
+                                📋 <span data-i18n="dms.filingPlan">Registraturplan</span>
+                            </a>
+                        </li>
+                        <li class="dms-nav-item">
+                            <a href="#" class="dms-nav-link" onclick="window.dmsManager?.showSearchInterface()">
+                                🔍 <span data-i18n="common.search">Suchen</span>
+                            </a>
+                        </li>
+                        <li class="dms-nav-item">
+                            <a href="#" class="dms-nav-link" onclick="window.dmsManager?.showStatistics()">
+                                📊 <span data-i18n="dms.statistics">Statistiken</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="dms-sidebar-section">
+                    <h3 data-i18n="nav.actions">Aktionen</h3>
+                    <div class="dms-action-buttons">
+                        <button class="dms-btn dms-btn-block" onclick="window.dmsManager?.createDossier(0)">
+                            📁 <span data-i18n="dms.newDossier">Neues Dossier</span>
+                        </button>
+                        <button class="dms-btn dms-btn-secondary dms-btn-block" id="sidebar-create-document-btn" 
+                                onclick="window.dmsManager?.createDocumentFromSidebar()" disabled>
+                            📄 <span data-i18n="dms.newDocument">Neues Dokument</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dms-sidebar-section">
+                    <h3 data-i18n="dms.recentActivities">Letzte Aktivitäten</h3>
+                    <div class="dms-recent-activities">
+                        <div class="dms-activity-item">
+                            <span class="dms-activity-icon">📄</span>
+                            <div class="dms-activity-text">
+                                <div class="dms-activity-title" data-i18n="dms.documentCreatedShort">Dokument erstellt</div>
+                                <div class="dms-activity-time" data-i18n="dms.timeAgo2HoursShort">vor 2 Stunden</div>
+                            </div>
+                        </div>
+                        <div class="dms-activity-item">
+                            <span class="dms-activity-icon">📁</span>
+                            <div class="dms-activity-text">
+                                <div class="dms-activity-title" data-i18n="dms.dossierCreatedShort">Dossier angelegt</div>
+                                    <div class="dms-activity-time" data-i18n="dms.timeAgoYesterdayShort">gestern</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Content Area -->
+            <div class="dms-content-area">
+                <!-- Toolbar -->
+                <div class="dms-toolbar" id="dms-toolbar">
+                    <div class="dms-toolbar-left">
+                        <button class="dms-btn dms-btn-primary">
+                            📁 <span data-i18n="toolbar.newDossier">New Dossier</span>
+                        </button>
+                        <button class="dms-btn dms-btn-secondary">
+                            📄 <span data-i18n="toolbar.newDocument">New Document</span>
+                        </button>
+                    </div>
+                    <div class="dms-toolbar-right">
+                        <button class="dms-btn dms-btn-secondary dms-btn-sm" onclick="window.dmsManager?.showDeletedItems()" title="Gelöschte Elemente anzeigen">
+                            🗂️ <span data-i18n="toolbar.trashbin">Trashcan</span>
+                        </button>
+                        <div class="dms-view-controls">
+                            <button class="dms-btn dms-btn-sm active" data-i18n-title="toolbar.cardView" title="Card View">
+                                ⊞
+                            </button>
+                            <button class="dms-btn dms-btn-sm" data-i18n-title="toolbar.listView" title="List View">
+                                ≡
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Breadcrumb Navigation -->
+                <div class="dms-breadcrumb-container">
+                    <nav class="dms-breadcrumb" id="dms-breadcrumb">
+                        <span class="dms-breadcrumb-loading">Lade...</span>
+                    </nav>
+                </div>
+
+                <!-- Main Content -->
+                <div class="dms-content" id="dms-content">
+                    <div class="dms-loading">
+                        <div class="dms-loading-spinner"></div>
+                        <p>Lade Registraturplan...</p>
+                    </div>
+                </div>
+
+                <!-- Statistics View -->
+                <div class="dms-statistics-view" id="dms-statistics-view" style="display: none;">
+                    <div class="dms-statistics-header">
+                        <h2>📊 DMS Statistiken</h2>
+                        <button class="dms-btn dms-btn-secondary" onclick="window.dmsManager?.hideStatistics()">
+                            ← Zurück zur Übersicht
+                        </button>
+                    </div>
+                    <div class="dms-statistics-container" id="dms-statistics-container">
+                        <!-- Statistics content will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Upload Drop Zone -->
+        <div class="dms-drop-zone" id="dms-drop-zone">
+            <div class="dms-drop-zone-content">
+                <div class="dms-drop-zone-icon">📤</div>
+                <div class="dms-drop-zone-text">
+                    <h3>Dateien hierher ziehen</h3>
+                    <p>oder klicken Sie, um Dateien auszuwählen</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden file input -->
+        <input type="file" id="dms-file-input" multiple style="display: none;">
+    </div>
+
+    <!-- Modals -->
+    <!-- Create Registraturposition Modal -->
+    <div class="dms-modal" id="dms-create-registraturposition-modal">
+        <div class="dms-modal-content">
+            <div class="dms-modal-header">
+                <h3 data-i18n="modal.createRegistraturposition">Neue Registraturposition erstellen</h3>
+                <button class="dms-modal-close">&times;</button>
+            </div>
+            <div class="dms-modal-body">
+                <form id="dms-create-registraturposition-form">
+                    <div class="dms-form-group">
+                        <label for="registraturposition-name" data-i18n="form.name">Name</label>
+                        <input type="text" id="registraturposition-name" name="name" required>
+                    </div>
+                    <div class="dms-form-group">
+                        <label for="registraturposition-positionNummer" data-i18n="form.positionNumber">Positionsnummer</label>
+                        <input type="number" id="registraturposition-positionNummer" name="positionNummer" required min="1">
+                    </div>
+                    <div class="dms-form-group">
+                        <label for="registraturposition-beschreibung" data-i18n="form.description">Beschreibung</label>
+                        <textarea id="registraturposition-beschreibung" name="beschreibung" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="dms-modal-footer">
+                <button class="dms-btn dms-btn-secondary" onclick="window.dmsManager?.closeModal('dms-create-registraturposition-modal')">
+                    <span data-i18n="button.cancel">Abbrechen</span>
+                </button>
+                <button class="dms-btn dms-btn-primary" onclick="window.dmsManager?.submitCreateRegistraturPosition()">
+                    <span data-i18n="button.create">Erstellen</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Dossier Modal -->
+    <div class="dms-modal" id="dms-create-dossier-modal">
+        <div class="dms-modal-content">
+            <div class="dms-modal-header">
+                <h3 data-i18n="modal.createDossier">Neues Dossier erstellen</h3>
+                <button class="dms-modal-close">&times;</button>
+            </div>
+            <div class="dms-modal-body">
+                <form id="dms-create-dossier-form">
+                    <div class="dms-form-group">
+                        <label for="dossier-registraturposition">Registraturposition</label>
+                        <select id="dossier-registraturposition" name="registraturPositionId" required>
+                            <option value="" data-i18n="form.pleaseSelect">Bitte wählen...</option>
+                        </select>
+                    </div>
+                    <div class="dms-form-group">
+                        <label for="dossier-parent" data-i18n="form.parentDossier">Übergeordnetes Dossier</label>
+                        <select id="dossier-parent" name="parentDossierId">
+                            <option value="" data-i18n="form.noParentDossier">Kein übergeordnetes Dossier (Hauptdossier)</option>
+                        </select>
+                        <small class="dms-help-text" data-i18n="form.helpTextDossier">Wählen Sie ein übergeordnetes Dossier, um ein Unterdossier zu erstellen.</small>
+                    </div>
+                    <div class="dms-form-group">
+                        <label for="dossier-name" data-i18n="form.name">Name</label>
+                        <input type="text" id="dossier-name" name="name" required>
+                    </div>
+                    <div class="dms-form-group">
+                        <label for="dossier-beschreibung" data-i18n="form.description">Beschreibung</label>
+                        <textarea id="dossier-beschreibung" name="beschreibung" rows="3"></textarea>
+                    </div>
+                    <div class="dms-form-group">
+                        <div class="form-row">
+                            <label for="dossier-be" data-i18n="dms.publicshare">Anonymer Öffentlicher Share</label>
+                            <input type="checkbox" id="dossier-be" name="publicshare" value="true">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="dms-modal-footer">
+                <button class="dms-btn dms-btn-secondary" onclick="window.dmsManager?.closeModal('dms-create-dossier-modal')">
+                    <span data-i18n="button.cancel">Abbrechen</span>
+                </button>
+                <button class="dms-btn dms-btn-primary" onclick="window.dmsManager?.submitCreateDossier()">
+                    <span data-i18n="button.create">Erstellen</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Document Modal -->
+    <div class="dms-modal" id="dms-create-document-modal">
+        <div class="dms-modal-content dms-modal-large">
+            <div class="dms-modal-header">
+                <h3 data-i18n="modal.createDocument">Neues Dokument erstellen</h3>
+                <button class="dms-modal-close">&times;</button>
+            </div>
+            <div class="dms-modal-body">
+                <form id="dms-create-document-form">
+                    <!-- File Upload Section -->
+                    <div class="dms-form-section">
+                        <h4 data-i18n="upload.fileUpload">📎 Datei-Upload</h4>
+                        <div class="dms-file-upload-area" id="dms-document-upload-area">
+                            <div class="dms-file-upload-zone dms-version-upload-zone" id="dms-document-upload-zone">
+                                <div class="dms-upload-icon">📤</div>
+                                <div class="dms-upload-text">
+                                    <p class="dms-upload-primary"><strong data-i18n="upload.dragDropFiles">Datei hierher ziehen oder klicken zum Auswählen</strong></p>
+                                    <p class="dms-version-info" data-i18n="upload.createNewDocument">Erstellen Sie ein neues Dokument</p>
+                                    <p class="dms-upload-formats" data-i18n="upload.supportedFormats">Unterstützte Formate: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, JPG, PNG, GIF</p>
+                                </div>
+                            </div>
+                            <input type="file" id="dms-document-file-input" style="display: none;" 
+                                   accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif">
+                            
+                            <!-- File Preview -->
+                            <div class="dms-file-preview" id="dms-document-file-preview" style="display: none;">
+                                <div class="dms-file-info">
+                                    <div class="dms-file-icon" id="dms-file-icon">📄</div>
+                                    <div class="dms-file-details">
+                                        <div class="dms-file-name" id="dms-file-name"></div>
+                                        <div class="dms-file-size" id="dms-file-size"></div>
+                                        <div class="dms-file-type" id="dms-file-type"></div>
+                                    </div>
+                                    <button type="button" class="dms-btn dms-btn-sm dms-btn-danger" 
+                                            onclick="window.dmsManager?.removeSelectedFile()" data-i18n-title="upload.removeFile" title="Datei entfernen">
+                                        🗑️
+                                    </button>
+                                </div>
+                                <div class="dms-upload-progress" id="dms-upload-progress" style="display: none;">
+                                    <div class="dms-progress-bar">
+                                        <div class="dms-progress-fill" id="dms-progress-fill" style="width: 0%;"></div>
+                                    </div>
+                                    <div class="dms-progress-text" id="dms-progress-text" data-i18n="upload.uploading">Uploading... 0%</div>
+                                </div>
+                                <div class="dms-upload-success" id="dms-upload-success" style="display: none;">
+                                    <span class="dms-success-icon">✅</span>
+                                    <span data-i18n="upload.uploadSuccess">Datei erfolgreich hochgeladen</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Document Metadata Section -->
+                    <div class="dms-form-section">
+                        <h4 data-i18n="document.metadata">📝 Dokument-Metadaten</h4>
+                        <div class="dms-form-group">
+                            <label for="document-titel" data-i18n="form.title">Titel *</label>
+                            <input type="text" id="document-titel" name="titel" required 
+                                   data-i18n-placeholder="form.titlePlaceholder"
+                                   placeholder="Geben Sie einen Titel für das Dokument ein">
+                            <small class="dms-help-text" data-i18n="form.titleHelpText">Der Titel wird automatisch vom Dateinamen übernommen, kann aber geändert werden.</small>
+                        </div>
+                        
+                        <div class="dms-form-group">
+                            <label for="document-beschreibung" data-i18n="form.description">Beschreibung</label>
+                            <textarea id="document-beschreibung" name="beschreibung" rows="4" 
+                                      data-i18n-placeholder="form.descriptionPlaceholder"
+                                      placeholder="Optionale Beschreibung des Dokuments..."></textarea>
+                        </div>
+                        
+                        <div class="dms-form-group">
+                            <label for="document-status" data-i18n="form.status">Status</label>
+                            <select id="document-status" name="status">
+                                <option value="Entwurf" data-i18n="status.draft">Entwurf</option>
+                                <option value="Freigegeben" data-i18n="status.approved">Freigegeben</option>
+                                <option value="Archiviert" data-i18n="status.archived">Archiviert</option>
+                            </select>
+                        </div>
+
+                        <div class="dms-form-group">
+                            <label for="document-kommentar" data-i18n="form.versionComment">Kommentar zur Version</label>
+                            <input type="text" id="document-kommentar" name="kommentar" 
+                                   data-i18n-placeholder="form.versionCommentPlaceholder"
+                                   placeholder="z.B. 'Erste Version', 'Überarbeitung nach Review'">
+                            <small class="dms-help-text" data-i18n="form.versionCommentHelpText">Dieser Kommentar wird in der Versionshistorie angezeigt.</small>
+                        </div>
+                    </div>
+
+                    <!-- Dossier Information (read-only) -->
+                    <div class="dms-form-section">
+                        <h4 data-i18n="form.targetDossier">📁 Ziel-Dossier</h4>
+                        <div class="dms-form-group">
+                            <label data-i18n="form.dossier">Dossier</label>
+                            <div class="dms-readonly-field" id="dms-target-dossier-info">
+                                <span id="dms-target-dossier-name" data-i18n="form.loading">Wird geladen...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hidden fields for internal use -->
+                    <input type="hidden" id="document-dossier-id" name="dossierId">
+                    <input type="hidden" id="document-file-hash" name="fileHash">
+                    <input type="hidden" id="document-file-size" name="fileSize">
+                    <input type="hidden" id="document-mime-type" name="mimeType">
+                    <input type="hidden" id="document-file-name" name="fileName">
+                </form>
+            </div>
+            <div class="dms-modal-footer">
+                <button class="dms-btn dms-btn-secondary" onclick="window.dmsManager?.closeModal('dms-create-document-modal')">
+                    <span data-i18n="button.cancel">Abbrechen</span>
+                </button>
+                <button class="dms-btn dms-btn-primary" id="dms-create-document-submit" 
+                        onclick="window.dmsManager?.submitCreateDocument()" disabled>
+                    <span id="dms-create-document-submit-text" data-i18n="document.createDocument">Dokument erstellen</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload New Version Modal -->
+    <div class="dms-modal" id="dms-upload-version-modal">
+        <div class="dms-modal-content dms-modal-large">
+            <div class="dms-modal-header">
+                <h3 data-i18n="modal.uploadVersion">Neue Version hochladen</h3>
+                <button class="dms-modal-close">&times;</button>
+            </div>
+            <div class="dms-modal-body">
+                <form id="dms-upload-version-form">
+                    <!-- Document Info Section -->
+                    <div class="dms-form-section">
+                        <h4 data-i18n="document.information">📄 Dokument-Informationen</h4>
+                        <div class="dms-readonly-field" id="dms-version-document-info">
+                            <span id="dms-version-document-title" data-i18n="form.loading">Wird geladen...</span>
+                        </div>
+                    </div>
+
+                    <!-- File Upload Section -->
+                    <div class="dms-form-section">
+                        <h4 data-i18n="upload.newFile">📎 Neue Datei</h4>
+                        <div class="dms-file-upload-area" id="dms-version-upload-area">
+                            <div class="dms-file-upload-zone dms-version-upload-zone" id="dms-version-upload-zone">
+                                <div class="dms-upload-icon">📤</div>
+                                <div class="dms-upload-text">
+                                    <p class="dms-upload-primary"><strong data-i18n="upload.dragDropFiles">Datei hierher ziehen oder klicken zum Auswählen</strong></p>
+                                    <p class="dms-version-info" data-i18n="upload.newVersionAdded">Die neue Datei wird als neue Version hinzugefügt</p>
+                                    <p class="dms-upload-formats" data-i18n="upload.supportedFormats">Unterstützte Formate: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, JPG, PNG, GIF</p>
+                                </div>
+                            </div>
+                            <input type="file" id="dms-version-file-input" style="display: none;">
+                            
+                            <!-- File Preview -->
+                            <div class="dms-file-preview" id="dms-version-file-preview" style="display: none;">
+                                <div class="dms-file-info">
+                                    <div class="dms-file-icon" id="dms-version-file-icon">📄</div>
+                                    <div class="dms-file-details">
+                                        <div class="dms-file-name" id="dms-version-file-name"></div>
+                                        <div class="dms-file-size" id="dms-version-file-size"></div>
+                                        <div class="dms-file-type" id="dms-version-file-type"></div>
+                                    </div>
+                                    <button type="button" class="dms-btn dms-btn-sm dms-btn-danger" 
+                                            onclick="window.dmsManager?.removeVersionFile()" data-i18n-title="upload.removeFile" title="Datei entfernen">
+                                        🗑️
+                                    </button>
+                                </div>
+                                <div class="dms-upload-progress" id="dms-version-upload-progress" style="display: none;">
+                                    <div class="dms-progress-bar">
+                                        <div class="dms-progress-fill" id="dms-version-progress-fill" style="width: 0%;"></div>
+                                    </div>
+                                    <div class="dms-progress-text" id="dms-version-progress-text" data-i18n="upload.uploading">Uploading... 0%</div>
+                                </div>
+                                <div class="dms-upload-success" id="dms-version-upload-success" style="display: none;">
+                                    <span class="dms-success-icon">✅</span>
+                                    <span data-i18n="upload.uploadSuccess">Datei erfolgreich hochgeladen</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Version Metadata Section -->
+                    <div class="dms-form-section">
+                        <h4 data-i18n="document.versionInformation">📝 Versions-Informationen</h4>
+                        <div class="dms-form-group">
+                            <label for="version-kommentar" data-i18n="document.newVersionComment">Kommentar zur neuen Version *</label>
+                            <input type="text" id="version-kommentar" name="kommentar" required
+                                   data-i18n-placeholder="document.newVersionCommentPlaceholder"
+                                   placeholder="z.B. 'Überarbeitung nach Review', 'Korrigierte Fassung'">
+                            <small class="dms-help-text" data-i18n="document.newVersionCommentHelpText">Beschreiben Sie die Änderungen in dieser Version.</small>
+                        </div>
+                    </div>
+
+                    <!-- Hidden fields -->
+                    <input type="hidden" id="version-document-id" name="documentId">
+                    <input type="hidden" id="version-file-hash" name="fileHash">
+                    <input type="hidden" id="version-file-size" name="fileSize">
+                    <input type="hidden" id="version-mime-type" name="mimeType">
+                    <input type="hidden" id="version-file-name" name="fileName">
+                </form>
+            </div>
+            <div class="dms-modal-footer">
+                <button class="dms-btn dms-btn-secondary" onclick="window.dmsManager?.closeModal('dms-upload-version-modal')">
+                    Abbrechen
+                </button>
+                <button class="dms-btn dms-btn-primary" id="dms-upload-version-submit" 
+                        onclick="window.dmsManager?.submitUploadVersion()" disabled>
+                    <span id="dms-upload-version-submit-text">Version hochladen</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Version History Modal -->
+    <div class="dms-modal" id="dms-version-history-modal">
+        <div class="dms-modal-content dms-modal-large">
+            <div class="dms-modal-header">
+                <h3>Versionshistorie</h3>
+                <button class="dms-modal-close">&times;</button>
+            </div>
+            <div class="dms-modal-body">
+                <div id="dms-version-history-content">
+                    <!-- Version history will be loaded here -->
+                </div>
+            </div>
+            <div class="dms-modal-footer">
+                <button class="dms-btn dms-btn-secondary" onclick="window.dmsManager?.closeModal('dms-version-history-modal')" data-i18n="dms.close">
+                    Schließen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Modal -->
+    <div id="dms-search-modal" class="dms-modal">
+        <div class="dms-modal-content dms-modal-large">
+            <div class="dms-modal-header">
+                <h3 data-i18n="dms.searchDocumentsAndDossiers">🔍 Dokumente und Dossiers durchsuchen</h3>
+                <button class="dms-modal-close">&times;</button>
+            </div>
+            <div class="dms-modal-body">
+                <!-- Search Form -->
+                <div class="dms-search-form">
+                    <div class="dms-search-input-group">
+                        <input type="text" id="dms-search-query" class="dms-search-input" 
+                               placeholder="Suchbegriff eingeben..." data-i18n-placeholder="dms.searchPlaceholder" autocomplete="off">
+                        <button type="button" id="dms-search-btn" class="dms-btn dms-btn-primary" data-i18n="dms.searchBtn">
+                            🔍 Suchen
+                        </button>
+                    </div>
+                    
+                    <!-- Advanced Search Filters -->
+                    <div class="dms-search-filters" id="dms-search-filters" style="display: none;">
+                        <div class="dms-form-row">
+                            <div class="dms-form-group">
+                                <label for="search-type" data-i18n="dms.type">Typ</label>
+                                <select id="search-type" class="dms-form-control">
+                                    <option value="" data-i18n="dms.all">Alle</option>
+                                    <option value="document" data-i18n="dms.onlyDocuments">Nur Dokumente</option>
+                                    <option value="dossier" data-i18n="dms.onlyDossiers">Nur Dossiers</option>
+                                </select>
+                            </div>
+                            <div class="dms-form-group">
+                                <label for="search-mime-type" data-i18n="dms.fileType">Dateityp</label>
+                                <select id="search-mime-type" class="dms-form-control">
+                                    <option value="" data-i18n="dms.allFileTypes">Alle Dateitypen</option>
+                                    <option value="application/pdf">PDF</option>
+                                    <option value="application/msword">Word (.doc)</option>
+                                    <option value="application/vnd.openxmlformats-officedocument.wordprocessingml.document">Word (.docx)</option>
+                                    <option value="application/vnd.ms-excel">Excel (.xls)</option>
+                                    <option value="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">Excel (.xlsx)</option>
+                                    <option value="text/plain" data-i18n="dms.text">Text</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="dms-form-row">
+                            <div class="dms-form-group">
+                                <label for="search-date-from" data-i18n="dms.fromDate">Von Datum</label>
+                                <input type="date" id="search-date-from" class="dms-form-control">
+                            </div>
+                            <div class="dms-form-group">
+                                <label for="search-date-to" data-i18n="dms.toDate">Bis Datum</label>
+                                <input type="date" id="search-date-to" class="dms-form-control">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dms-search-toggle">
+                        <button type="button" id="dms-search-toggle-filters" class="dms-btn dms-btn-secondary dms-btn-sm">
+                            ⚙️ Erweiterte Suche
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Search Results -->
+                <div class="dms-search-results" id="dms-search-results" style="display: none;">
+                    <div class="dms-search-results-header">
+                        <h4 id="dms-search-results-title" data-i18n="dms.searchResults">Suchergebnisse</h4>
+                        <div class="dms-search-results-count" id="dms-search-results-count"></div>
+                    </div>
+                    
+                    <!-- Document Results -->
+                    <div class="dms-search-section" id="dms-document-results" style="display: none;">
+                        <h5 data-i18n="dms.documents">📄 Dokumente</h5>
+                        <div class="dms-search-items" id="dms-document-items"></div>
+                    </div>
+                    
+                    <!-- Dossier Results -->
+                    <div class="dms-search-section" id="dms-dossier-results" style="display: none;">
+                        <h5 data-i18n="dms.dossiers">📁 Dossiers</h5>
+                        <div class="dms-search-items" id="dms-dossier-items"></div>
+                    </div>
+                    
+                    <!-- No Results Message -->
+                    <div class="dms-search-no-results" id="dms-search-no-results" style="display: none;">
+                        <div class="dms-empty-state">
+                            <div class="dms-empty-icon">🔍</div>
+                            <h4 data-i18n="dms.noResultsFound">Keine Ergebnisse gefunden</h4>
+                            <p data-i18n="dms.tryOtherTerms">Versuchen Sie andere Suchbegriffe oder passen Sie die Filter an.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Loading State -->
+                    <div class="dms-search-loading" id="dms-search-loading" style="display: none;">
+                        <div class="dms-loading-spinner"></div>
+                        <p data-i18n="dms.searchInProgress">Suche läuft...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>🃏 <span data-i18n="dms.learningCardsApps">Lernkarten Apps</span></h4>
+                <p data-i18n="dms.professionalLearningPlatform">Professionelle Lernplattform für effektives Wissensmanagement</p>
+                <p><small data-i18n="dms.demoAppMadeIn">Demo Applikation, made in Dornbirn mit 💖, ☕ und ✨ (AI)</small></p>
+            </div>
+            
+            <div class="footer-section">
+                <h4>📋 Rechtliches</h4>
+                <ul class="footer-links">
+                    <li><a href="#" id="privacyLink">Datenschutzerklärung</a></li>
+                    <li><a href="#" id="impressumLink">Impressum</a></li>
+                    <li><a href="#" id="termsLink">AGB</a></li>
+                    <li><a href="#" id="cookiePolicyLink">Cookie-Richtlinie</a></li>
+                    <li><a href="#" id="withdrawalLink">Widerrufsbelehrung</a></li>
+                    <li><a href="#" id="refundLink">Rückgabe & Erstattung</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>🛡️ <span data-i18n="dms.service">Service</span></h4>
+                <ul class="footer-links">
+                    <li><a href="#" id="securityLink">Sicherheitsrichtlinien</a></li>
+                    <li><a href="#" id="communityLink">Community-Richtlinien</a></li>
+                    <li><a href="#" id="faqLink">FAQ & Hilfe</a></li>
+                    <li><a href="#" id="contactLink">Kontakt</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>🏢 <span data-i18n="dms.provider">Anbieter</span></h4>
+                <p>
+                    <strong>Stefan Hutter - ITK Beratung & Research</strong><br>
+                    Austria<br>
+                    Steuernummer: ATU61610509<br>
+                    <a href="mailto:contact@m3-works.com" class="footer-contact-link">contact@m3-works.com</a><br>
+                    <a href="https://www.m3-works.com" target="_blank" class="footer-contact-link">www.m3-works.com</a><br>
+                    <br>
+                    <strong>Lernkarten Apps</strong><br>
+                    <a href="mailto:cards@m3-works.com" class="footer-contact-link">cards@m3-works.com</a><br>
+                    Demo Applikation, made in Dornbirn mit 💖, ☕und ✨ (AI)
+                </p>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2025 Stefan Hutter - ITK Beratung & Research. Alle Rechte vorbehalten. | Hosting: AWS Ireland (EU) | Dornbirn</p>
+        </div>
+    </footer>
+    
+    <!-- Legal Pages Content (hidden by default) -->
+    <div id="privacyContent" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; padding: 20px; overflow-y: auto;">
+        <div style="background: white; max-width: 800px; margin: 0 auto; padding: 20px; border-radius: 10px; max-height: 90vh; overflow-y: auto; position: relative;">
+            <button class="dms-legal-close" onclick="closeDMSModal('privacyContent')" style="position: absolute; top: 15px; right: 15px; background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 50%; width: 35px; height: 35px; font-size: 18px; cursor: pointer; z-index: 10001;">&times;</button>
+            <div id="privacyContentInner"></div>
+        </div>
+    </div>
+    <div id="impressumContent" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; padding: 20px; overflow-y: auto;">
+        <div style="background: white; max-width: 800px; margin: 0 auto; padding: 20px; border-radius: 10px; max-height: 90vh; overflow-y: auto; position: relative;">
+            <button class="dms-legal-close" onclick="closeDMSModal(this.closest('[id]').id)" style="position: absolute; top: 15px; right: 15px; background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 50%; width: 35px; height: 35px; font-size: 18px; cursor: pointer; z-index: 10001;">&times;</button>
+            <div id="impressumContentInner"></div>
+        </div>
+    </div>
+    <div id="termsContent" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; padding: 20px; overflow-y: auto;">
+        <div style="background: white; max-width: 800px; margin: 0 auto; padding: 20px; border-radius: 10px; max-height: 90vh; overflow-y: auto; position: relative;">
+            <button class="dms-legal-close" onclick="closeDMSModal(this.closest('[id]').id)" style="position: absolute; top: 15px; right: 15px; background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 50%; width: 35px; height: 35px; font-size: 18px; cursor: pointer; z-index: 10001;">&times;</button>
+            <div id="termsContentInner"></div>
+        </div>
+    </div>
+    <div id="cookiePolicyContent" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; padding: 20px; overflow-y: auto;">
+        <div style="background: white; max-width: 800px; margin: 0 auto; padding: 20px; border-radius: 10px; max-height: 90vh; overflow-y: auto; position: relative;">
+            <button class="dms-legal-close" onclick="closeDMSModal(this.closest('[id]').id)" style="position: absolute; top: 15px; right: 15px; background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 50%; width: 35px; height: 35px; font-size: 18px; cursor: pointer; z-index: 10001;">&times;</button>
+            <div id="cookiePolicyContentInner"></div>
+        </div>
+    </div>
+    <div id="withdrawalContent" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; padding: 20px; overflow-y: auto;">
+        <div style="background: white; max-width: 800px; margin: 0 auto; padding: 20px; border-radius: 10px; max-height: 90vh; overflow-y: auto; position: relative;">
+            <button class="dms-legal-close" onclick="closeDMSModal(this.closest('[id]').id)" style="position: absolute; top: 15px; right: 15px; background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 50%; width: 35px; height: 35px; font-size: 18px; cursor: pointer; z-index: 10001;">&times;</button>
+            <div id="withdrawalContentInner"></div>
+        </div>
+    </div>
+    <div id="refundContent" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; padding: 20px; overflow-y: auto;">
+        <div style="background: white; max-width: 800px; margin: 0 auto; padding: 20px; border-radius: 10px; max-height: 90vh; overflow-y: auto; position: relative;">
+            <button class="dms-legal-close" onclick="closeDMSModal(this.closest('[id]').id)" style="position: absolute; top: 15px; right: 15px; background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 50%; width: 35px; height: 35px; font-size: 18px; cursor: pointer; z-index: 10001;">&times;</button>
+            <div id="refundContentInner"></div>
+        </div>
+    </div>
+    <div id="securityContent" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; padding: 20px; overflow-y: auto;">
+        <div style="background: white; max-width: 800px; margin: 0 auto; padding: 20px; border-radius: 10px; max-height: 90vh; overflow-y: auto; position: relative;">
+            <button class="dms-legal-close" onclick="closeDMSModal(this.closest('[id]').id)" style="position: absolute; top: 15px; right: 15px; background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 50%; width: 35px; height: 35px; font-size: 18px; cursor: pointer; z-index: 10001;">&times;</button>
+            <div id="securityContentInner"></div>
+        </div>
+    </div>
+    <div id="communityContent" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; padding: 20px; overflow-y: auto;">
+        <div style="background: white; max-width: 800px; margin: 0 auto; padding: 20px; border-radius: 10px; max-height: 90vh; overflow-y: auto; position: relative;">
+            <button class="dms-legal-close" onclick="closeDMSModal(this.closest('[id]').id)" style="position: absolute; top: 15px; right: 15px; background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 50%; width: 35px; height: 35px; font-size: 18px; cursor: pointer; z-index: 10001;">&times;</button>
+            <div id="communityContentInner"></div>
+        </div>
+    </div>
+    <div id="faqContent" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; padding: 20px; overflow-y: auto;">
+        <div style="background: white; max-width: 800px; margin: 0 auto; padding: 20px; border-radius: 10px; max-height: 90vh; overflow-y: auto; position: relative;">
+            <button class="dms-legal-close" onclick="closeDMSModal(this.closest('[id]').id)" style="position: absolute; top: 15px; right: 15px; background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 50%; width: 35px; height: 35px; font-size: 18px; cursor: pointer; z-index: 10001;">&times;</button>
+            <div id="faqContentInner"></div>
+        </div>
+    </div>
+    <div id="contactContent" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; padding: 20px; overflow-y: auto;">
+        <div style="background: white; max-width: 800px; margin: 0 auto; padding: 20px; border-radius: 10px; max-height: 90vh; overflow-y: auto; position: relative;">
+            <button class="dms-legal-close" onclick="closeDMSModal(this.closest('[id]').id)" style="position: absolute; top: 15px; right: 15px; background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 50%; width: 35px; height: 35px; font-size: 18px; cursor: pointer; z-index: 10001;">&times;</button>
+            <div id="contactContentInner"></div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="dms-toast-container" id="dms-toast-container"></div>
+
+    <!-- Scripts -->
+    <script type="module" src="../../js/dms/DMSScript.js"></script>
+    <script>
+        // Initialize file input handler
+        document.getElementById('dms-file-input').addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                window.dmsManager?.handleFileUpload(files);
+            }
+        });
+
+        // Upload button is now handled via onclick attribute
+
+        // Initialize drop zone
+        const dropZone = document.getElementById('dms-drop-zone');
+        dropZone.addEventListener('click', function() {
+            document.getElementById('dms-file-input').click();
+        });
+
+        // Initialize modal close buttons
+        document.querySelectorAll('.dms-modal-close').forEach(button => {
+            button.addEventListener('click', function() {
+                const modal = this.closest('.dms-modal');
+                modal.style.display = 'none';
+            });
+        });
+
+        // Close modals when clicking outside
+        document.querySelectorAll('.dms-modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                }
+            });
+        });
+    </script>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="dms-modal" id="dms-delete-confirmation-modal">
+        <div class="dms-modal-content">
+            <div class="dms-modal-header">
+                <h3>🗑️ Element löschen</h3>
+                <button class="dms-modal-close">&times;</button>
+            </div>
+            <div class="dms-modal-body">
+                <div class="dms-delete-warning">
+                    ⚠️ <strong>Achtung!</strong> Sie sind dabei, ein Element zu löschen.
+                </div>
+                <div class="dms-delete-info">
+                    <div class="dms-delete-item-info" id="dms-delete-item-info">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                    <div class="dms-delete-consequences" id="dms-delete-consequences">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="dms-delete-note">
+                    <strong>Hinweis:</strong> Das Element wird nur als "gelöscht" markiert und kann später wiederhergestellt werden.
+                </div>
+            </div>
+            <div class="dms-modal-footer">
+                <button class="dms-btn dms-btn-secondary" onclick="window.dmsManager?.closeModal('dms-delete-confirmation-modal')">
+                    Abbrechen
+                </button>
+                <button class="dms-btn dms-btn-danger" id="dms-delete-confirm-btn" onclick="window.dmsManager?.confirmDelete()">
+                    🗑️ Löschen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Version Delete Confirmation Modal -->
+    <div class="dms-modal" id="dms-version-delete-confirmation-modal">
+        <div class="dms-modal-content">
+            <div class="dms-modal-header">
+                <h3>🗑️ Version löschen</h3>
+                <button class="dms-modal-close">&times;</button>
+            </div>
+            <div class="dms-modal-body">
+                <div class="dms-delete-warning">
+                    ⚠️ <strong>Achtung!</strong> Sie sind dabei, eine Dokumentversion als "gelöscht" zu markieren.
+                </div>
+                <div class="dms-delete-info">
+                    <div class="dms-version-delete-info" id="dms-version-delete-info">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="dms-delete-note">
+                    <strong>Hinweis:</strong> Die Version wird als "gelöscht" markiert und kann später über den Papierkorb wiederhergestellt werden.
+                </div>
+            </div>
+            <div class="dms-modal-footer">
+                <button class="dms-btn dms-btn-secondary" onclick="window.dmsManager?.closeModal('dms-version-delete-confirmation-modal')">
+                    Abbrechen
+                </button>
+                <button class="dms-btn dms-btn-danger" onclick="window.dmsManager?.confirmVersionDelete()">
+                    🗑️ Version löschen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Link Management Modal -->
+    <div class="dms-modal" id="dms-share-link-modal">
+        <div class="dms-modal-content">
+            <div class="dms-modal-header">
+                <h3>🔗 Öffentlichen Link verwalten</h3>
+                <button class="dms-modal-close">&times;</button>
+            </div>
+            <div class="dms-modal-body">
+                <div class="dms-share-info">
+                    <div class="dms-share-header">
+                        <h4 id="dms-share-dossier-name">Dossier Name</h4>
+                        <p class="dms-share-description">
+                            Über einen öffentlichen Link können externe Personen ohne Anmeldung auf dieses Dossier zugreifen, 
+                            Dateien herunterladen und neue Dateien hochladen.
+                        </p>
+                    </div>
+                    
+                    <div class="dms-share-toggle">
+                        <label class="dms-toggle-label">
+                            <input type="checkbox" id="dms-public-sharing-toggle" onchange="window.dmsManager?.togglePublicSharing()">
+                            <span class="dms-toggle-slider"></span>
+                            <span class="dms-toggle-text">Öffentlichen Zugriff aktivieren</span>
+                        </label>
+                    </div>
+                    
+                    <div class="dms-share-link-section" id="dms-share-link-section" style="display: none;">
+                        <div class="dms-share-link-info">
+                            <label for="dms-share-link-input">Öffentlicher Link:</label>
+                            <div class="dms-share-link-container">
+                                <input type="text" id="dms-share-link-input" readonly class="dms-share-link-input">
+                                <button class="dms-btn dms-btn-secondary dms-btn-sm" onclick="window.dmsManager?.copyShareLink()" title="Link kopieren">
+                                    📋 Kopieren
+                                </button>
+                                <button class="dms-btn dms-btn-secondary dms-btn-sm" onclick="window.dmsManager?.openShareLink()" title="Link öffnen">
+                                    🔗 Öffnen
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="dms-share-warning">
+                            <div class="dms-warning-icon">⚠️</div>
+                            <div class="dms-warning-text">
+                                <strong>Achtung:</strong> Jeder mit diesem Link kann auf das Dossier zugreifen, 
+                                Dateien herunterladen und neue Dateien hochladen. Teilen Sie den Link nur mit vertrauenswürdigen Personen.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dms-share-disabled-info" id="dms-share-disabled-info">
+                        <div class="dms-info-icon">ℹ️</div>
+                        <div class="dms-info-text">
+                            Öffentlicher Zugriff ist deaktiviert. Aktivieren Sie die Option oben, um einen Link zu generieren.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="dms-modal-footer">
+                <button class="dms-btn dms-btn-secondary" onclick="window.dmsManager?.closeModal('dms-share-link-modal')">
+                    Schließen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deleted Items Modal (for restoration) -->
+    <div class="dms-modal" id="dms-deleted-items-modal">
+        <div class="dms-modal-content dms-modal-large">
+            <div class="dms-modal-header">
+                <h3 data-i18n="dms.deletedItems">🗂️ Gelöschte Elemente</h3>
+                <button class="dms-modal-close">&times;</button>
+            </div>
+            <div class="dms-modal-body">
+                <div class="dms-deleted-items-info" data-i18n="dms.deletedItemsInfo">
+                    Hier können Sie gelöschte Dokumente und Dossiers wiederherstellen.
+                </div>
+                
+                <!-- Deleted Documents Section -->
+                <div class="dms-deleted-section" id="dms-deleted-documents-section">
+                    <h4 data-i18n="dms.deletedDocuments">📄 Gelöschte Dokumente</h4>
+                    <div class="dms-deleted-items-list" id="dms-deleted-documents-list">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Deleted Dossiers Section -->
+                <div class="dms-deleted-section" id="dms-deleted-dossiers-section">
+                    <h4 data-i18n="dms.deletedDossiers">📁 Gelöschte Dossiers</h4>
+                    <div class="dms-deleted-items-list" id="dms-deleted-dossiers-list">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Deleted Document Versions Section -->
+                <div class="dms-deleted-section" id="dms-deleted-versions-section">
+                    <h4 data-i18n="dms.deletedDocumentVersions">🗂️ Gelöschte Dokumentversionen</h4>
+                    <div class="dms-deleted-items-list" id="dms-deleted-versions-list">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="dms-no-deleted-items" id="dms-no-deleted-items" style="display: none;" data-i18n="dms.noDeletedItemsFound">
+                    ✅ Keine gelöschten Elemente gefunden.
+                </div>
+            </div>
+            <div class="dms-modal-footer">
+                <button class="dms-btn dms-btn-secondary" onclick="window.dmsManager?.closeModal('dms-deleted-items-modal')" data-i18n="dms.close">
+                    Schließen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global close function for all DMS legal modals
+        function closeDMSModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // DMS Legal Pages Integration
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add global close event handlers for all modals
+            const modalIds = [
+                'privacyContent', 'impressumContent', 'termsContent', 'cookiePolicyContent',
+                'withdrawalContent', 'refundContent', 'securityContent', 'communityContent',
+                'faqContent', 'contactContent'
+            ];
+
+            modalIds.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    // Close on background click
+                    modal.addEventListener('click', function(e) {
+                        if (e.target === modal) {
+                            closeDMSModal(modalId);
+                        }
+                    });
+
+                    // Close on X button click
+                    const closeBtn = modal.querySelector('.dms-legal-close, button');
+                    if (closeBtn) {
+                        closeBtn.onclick = function() {
+                            closeDMSModal(modalId);
+                        };
+                    }
+                }
+            });
+
+            // Global ESC key handler
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    modalIds.forEach(modalId => {
+                        const modal = document.getElementById(modalId);
+                        if (modal && modal.style.display === 'block') {
+                            closeDMSModal(modalId);
+                        }
+                    });
+                }
+            });
+
+            // Wait for LegalPages to be available
+            setTimeout(() => {
+                if (window.legalPages) {
+                    // Add event listeners for DMS legal page links
+                    const legalLinks = [
+                        'privacyLink', 'impressumLink', 'termsLink', 'cookiePolicyLink',
+                        'withdrawalLink', 'refundLink', 'securityLink', 'communityLink',
+                        'faqLink', 'contactLink'
+                    ];
+
+                    legalLinks.forEach(linkId => {
+                        const link = document.getElementById(linkId);
+                        if (link) {
+                            link.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                const pageId = linkId.replace('Link', '');
+                                showDMSLegalPage(pageId);
+                            });
+                        }
+                    });
+                }
+            }, 100);
+        });
+
+        function showDMSLegalPage(pageId) {
+            if (window.legalPages) {
+                const content = window.legalPages.getPageContent(pageId);
+                const contentDiv = document.getElementById(pageId + 'Content');
+                const innerDiv = document.getElementById(pageId + 'ContentInner');
+                
+                if (contentDiv && innerDiv) {
+                    innerDiv.innerHTML = content;
+                    contentDiv.style.display = 'block';
+                    
+                    // Scroll to top
+                    contentDiv.scrollTop = 0;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

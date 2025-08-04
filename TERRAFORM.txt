@@ -1,0 +1,11 @@
+Changes to Outputs:
+  ~ instance_id           = "i-03a5977a259b6001c" -> (known after apply)
+  ~ public_dns            = "ec2-63-178-0-58.eu-central-1.compute.amazonaws.com" -> (known after apply)
+  ~ security_group_id     = "sg-0684659451be41642" -> (known after apply)
+  ~ subnet_id             = "subnet-0569a116df3a97b1d" -> (known after apply)
+  ~ vpc_id                = "vpc-0b52ea1fc89fc69a8" -> (known after apply)
+  
+  
+  terraform import instance_id i-03fb765d6dac4b2ca
+  
+  

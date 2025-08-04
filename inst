@@ -1,0 +1,264 @@
+Reservations:
+- Groups: []
+  Instances:
+  - AmiLaunchIndex: 0
+    Architecture: x86_64
+    BlockDeviceMappings:
+    - DeviceName: /dev/sda1
+      Ebs:
+        AttachTime: '2025-07-29T18:10:32+00:00'
+        DeleteOnTermination: true
+        Status: attached
+        VolumeId: vol-09293f852621299ab
+    BootMode: uefi-preferred
+    CapacityReservationSpecification:
+      CapacityReservationPreference: open
+    ClientToken: terraform-20250729181031867100000003
+    CpuOptions:
+      CoreCount: 1
+      ThreadsPerCore: 2
+    CurrentInstanceBootMode: uefi
+    EbsOptimized: false
+    EnaSupport: true
+    EnclaveOptions:
+      Enabled: false
+    HibernationOptions:
+      Configured: false
+    Hypervisor: xen
+    ImageId: ami-0dc33c9c954b3f073
+    InstanceId: i-04a15b7e675492867
+    InstanceType: t3.medium
+    KeyName: learningcards-key
+    LaunchTime: '2025-07-29T18:10:32+00:00'
+    MaintenanceOptions:
+      AutoRecovery: default
+      RebootMigration: default
+    MetadataOptions:
+      HttpEndpoint: enabled
+      HttpProtocolIpv6: disabled
+      HttpPutResponseHopLimit: 1
+      HttpTokens: optional
+      InstanceMetadataTags: disabled
+      State: applied
+    Monitoring:
+      State: disabled
+    NetworkInterfaces:
+    - Association:
+        IpOwnerId: '988426489572'
+        PublicDnsName: ec2-3-124-169-248.eu-central-1.compute.amazonaws.com
+        PublicIp: 3.124.169.248
+      Attachment:
+        AttachTime: '2025-07-29T18:10:32+00:00'
+        AttachmentId: eni-attach-0c616579600436bfb
+        DeleteOnTermination: true
+        DeviceIndex: 0
+        NetworkCardIndex: 0
+        Status: attached
+      Description: ''
+      Groups:
+      - GroupId: sg-0684659451be41642
+        GroupName: learningcards-sg20250729181020743600000001
+      InterfaceType: interface
+      Ipv6Addresses: []
+      MacAddress: 02:90:b9:97:da:8d
+      NetworkInterfaceId: eni-0bf8730e7cafd608d
+      Operator:
+        Managed: false
+      OwnerId: '988426489572'
+      PrivateDnsName: ip-10-0-1-68.eu-central-1.compute.internal
+      PrivateIpAddress: 10.0.1.68
+      PrivateIpAddresses:
+      - Association:
+          IpOwnerId: '988426489572'
+          PublicDnsName: ec2-3-124-169-248.eu-central-1.compute.amazonaws.com
+          PublicIp: 3.124.169.248
+        Primary: true
+        PrivateDnsName: ip-10-0-1-68.eu-central-1.compute.internal
+        PrivateIpAddress: 10.0.1.68
+      SourceDestCheck: true
+      Status: in-use
+      SubnetId: subnet-0569a116df3a97b1d
+      VpcId: vpc-0b52ea1fc89fc69a8
+    NetworkPerformanceOptions:
+      BandwidthWeighting: default
+    Operator:
+      Managed: false
+    Placement:
+      AvailabilityZone: eu-central-1a
+      GroupName: ''
+      Tenancy: default
+    PlatformDetails: Linux/UNIX
+    PrivateDnsName: ip-10-0-1-68.eu-central-1.compute.internal
+    PrivateDnsNameOptions:
+      EnableResourceNameDnsAAAARecord: false
+      EnableResourceNameDnsARecord: false
+      HostnameType: ip-name
+    PrivateIpAddress: 10.0.1.68
+    ProductCodes: []
+    PublicDnsName: ec2-3-124-169-248.eu-central-1.compute.amazonaws.com
+    PublicIpAddress: 3.124.169.248
+    RootDeviceName: /dev/sda1
+    RootDeviceType: ebs
+    SecurityGroups:
+    - GroupId: sg-0684659451be41642
+      GroupName: learningcards-sg20250729181020743600000001
+    SourceDestCheck: true
+    State:
+      Code: 16
+      Name: running
+    StateTransitionReason: ''
+    SubnetId: subnet-0569a116df3a97b1d
+    Tags:
+    - Key: Name
+      Value: learningcards-instance
+    - Key: Application
+      Value: learning-cards
+    - Key: Environment
+      Value: demo
+    UsageOperation: RunInstances
+    UsageOperationUpdateTime: '2025-07-29T18:10:32+00:00'
+    VirtualizationType: hvm
+    VpcId: vpc-0b52ea1fc89fc69a8
+  OwnerId: '988426489572'
+  ReservationId: r-0af6c2b2d5572f526
+- Groups: []
+  Instances:
+  - AmiLaunchIndex: 0
+    Architecture: x86_64
+    BlockDeviceMappings:
+    - DeviceName: /dev/xvda
+      Ebs:
+        AttachTime: '2025-07-29T13:10:58+00:00'
+        DeleteOnTermination: true
+        Status: attached
+        VolumeId: vol-08d7fd8fa01899eeb
+    BootMode: uefi-preferred
+    CapacityReservationSpecification:
+      CapacityReservationPreference: open
+    ClientToken: 12f66159-3ae2-c1f0-7732-7483123b01aa
+    CpuOptions:
+      CoreCount: 1
+      ThreadsPerCore: 2
+    CurrentInstanceBootMode: uefi
+    EbsOptimized: false
+    EnaSupport: true
+    EnclaveOptions:
+      Enabled: false
+    HibernationOptions:
+      Configured: false
+    Hypervisor: xen
+    IamInstanceProfile:
+      Arn: arn:aws:iam::988426489572:instance-profile/learning-cards-beanstalk-ec2-profile
+      Id: AIPA6MIWPJ3SGTPQM2VFS
+    ImageId: ami-015ec500da8936bfb
+    InstanceId: i-022235b5fc31e4bc7
+    InstanceType: t3.medium
+    LaunchTime: '2025-07-29T13:10:57+00:00'
+    MaintenanceOptions:
+      AutoRecovery: default
+      RebootMigration: default
+    MetadataOptions:
+      HttpEndpoint: enabled
+      HttpProtocolIpv6: disabled
+      HttpPutResponseHopLimit: 2
+      HttpTokens: required
+      InstanceMetadataTags: disabled
+      State: applied
+    Monitoring:
+      State: disabled
+    NetworkInterfaces:
+    - Association:
+        IpOwnerId: amazon
+        PublicDnsName: ec2-3-75-203-176.eu-central-1.compute.amazonaws.com
+        PublicIp: 3.75.203.176
+      Attachment:
+        AttachTime: '2025-07-29T13:10:57+00:00'
+        AttachmentId: eni-attach-06b4771f511907741
+        DeleteOnTermination: true
+        DeviceIndex: 0
+        NetworkCardIndex: 0
+        Status: attached
+      Description: ''
+      Groups:
+      - GroupId: sg-03b1370fe596fa6b2
+        GroupName: awseb-e-45pbtskex3-stack-AWSEBSecurityGroup-w0de6ZbK6EIz
+      - GroupId: sg-044bf29c77d16d255
+        GroupName: learning-cards-beanstalk-instance-20250729130938967400000005
+      InterfaceType: interface
+      Ipv6Addresses: []
+      MacAddress: 06:eb:46:46:56:ad
+      NetworkInterfaceId: eni-01e891336a2139499
+      Operator:
+        Managed: false
+      OwnerId: '988426489572'
+      PrivateDnsName: ip-172-31-39-154.eu-central-1.compute.internal
+      PrivateIpAddress: 172.31.39.154
+      PrivateIpAddresses:
+      - Association:
+          IpOwnerId: amazon
+          PublicDnsName: ec2-3-75-203-176.eu-central-1.compute.amazonaws.com
+          PublicIp: 3.75.203.176
+        Primary: true
+        PrivateDnsName: ip-172-31-39-154.eu-central-1.compute.internal
+        PrivateIpAddress: 172.31.39.154
+      SourceDestCheck: true
+      Status: in-use
+      SubnetId: subnet-0353ddbf8daea6e6f
+      VpcId: vpc-0596e870c75befbf0
+    NetworkPerformanceOptions:
+      BandwidthWeighting: default
+    Operator:
+      Managed: false
+    Placement:
+      AvailabilityZone: eu-central-1b
+      GroupName: ''
+      Tenancy: default
+    PlatformDetails: Linux/UNIX
+    PrivateDnsName: ip-172-31-39-154.eu-central-1.compute.internal
+    PrivateDnsNameOptions:
+      EnableResourceNameDnsAAAARecord: false
+      EnableResourceNameDnsARecord: false
+      HostnameType: ip-name
+    PrivateIpAddress: 172.31.39.154
+    ProductCodes: []
+    PublicDnsName: ec2-3-75-203-176.eu-central-1.compute.amazonaws.com
+    PublicIpAddress: 3.75.203.176
+    RootDeviceName: /dev/xvda
+    RootDeviceType: ebs
+    SecurityGroups:
+    - GroupId: sg-03b1370fe596fa6b2
+      GroupName: awseb-e-45pbtskex3-stack-AWSEBSecurityGroup-w0de6ZbK6EIz
+    - GroupId: sg-044bf29c77d16d255
+      GroupName: learning-cards-beanstalk-instance-20250729130938967400000005
+    SourceDestCheck: true
+    State:
+      Code: 16
+      Name: running
+    StateTransitionReason: ''
+    SubnetId: subnet-0353ddbf8daea6e6f
+    Tags:
+    - Key: aws:ec2launchtemplate:id
+      Value: lt-05106fde939932dba
+    - Key: aws:autoscaling:groupName
+      Value: awseb-e-45pbtskex3-stack-AWSEBAutoScalingGroup-h6DsrSaw0LGn
+    - Key: elasticbeanstalk:environment-id
+      Value: e-45pbtskex3
+    - Key: aws:ec2launchtemplate:version
+      Value: '1'
+    - Key: aws:cloudformation:logical-id
+      Value: AWSEBAutoScalingGroup
+    - Key: elasticbeanstalk:environment-name
+      Value: learning-cards-env
+    - Key: Name
+      Value: learning-cards-env
+    - Key: aws:cloudformation:stack-id
+      Value: arn:aws:cloudformation:eu-central-1:988426489572:stack/awseb-e-45pbtskex3-stack/632fbc70-6c7d-11f0-9054-023c662950bd
+    - Key: aws:cloudformation:stack-name
+      Value: awseb-e-45pbtskex3-stack
+    UsageOperation: RunInstances
+    UsageOperationUpdateTime: '2025-07-29T13:10:57+00:00'
+    VirtualizationType: hvm
+    VpcId: vpc-0596e870c75befbf0
+  OwnerId: '988426489572'
+  RequesterId: '053592188284'
+  ReservationId: r-05bd54a8f20244dfe

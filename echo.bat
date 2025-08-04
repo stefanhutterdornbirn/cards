@@ -1,0 +1,1 @@
+ssh -o ConnectTimeout=5 -o BatchMode=yes -i "C:\Users\Stefa\.ssh\id_rsa" "ubuntu@3.124.169.248" "echo 'Ready'"

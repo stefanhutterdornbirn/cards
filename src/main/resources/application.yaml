@@ -1,0 +1,34 @@
+ktor:
+    development: on
+    application:
+        modules:
+            - com.shut.ApplicationKt.module
+    deployment:
+        port: 80
+        host: 0.0.0.0
+        maxResponseSize: 500000000
+        watch:
+          - build/classes/kotlin/main # Beispielpfad
+          - build/resources/main # Beispielpfad
+
+
+postgres:
+  url: "jdbc:postgresql://localhost:5432/demo"
+  user: "postgres"
+  password: "afthco99"
+  domain: "https://jwt-provider-domain/"
+  audience: "jwt-audience"
+  realm: "ktor sample app"
+
+
+fileStorage:
+  type: local
+  localBasePath: "content-store"
+  s3:
+    bucketName: m3-cas1
+    region: eu-central-1
+    # AWS Credentials (will use environment variables or AWS credential chain)
+    # Leave empty to use AWS default credential provider chain
+    accessKeyId: ""
+    secretAccessKey: ""
+    sessionToken: ""
