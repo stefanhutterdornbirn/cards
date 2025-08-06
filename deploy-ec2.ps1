@@ -98,9 +98,10 @@ function Build-Application {
 
 function Create-TerraformVars {
     $tfvarsFile = Join-Path $TerraformDir "terraform.tfvars"
-    
+    Write-Info "Using existing terraform.tfvars"
+	return
     if (-not (Test-Path $tfvarsFile)) {
-        Write-Info "Creating terraform.tfvars file..."
+	    Write-Info "Creating terraform.tfvars file..."
         
         # Generate random passwords using .NET
         $dbPassword = [System.Web.Security.Membership]::GeneratePassword(25, 5)
@@ -298,12 +299,12 @@ function Deploy-Application {
     # Copy application files
     Write-Info "Copying application files..."
     scp -i "$env:USERPROFILE\.ssh\id_rsa" "$jarPath" "ubuntu@${publicIp}:/tmp/"
-    scp -i "$env:USERPROFILE\.ssh\id_rsa" "src\main\resources\application-ec2.yaml" "ubuntu@${publicIp}:/tmp/"
+    
     
     # Deploy on EC2
     Write-Info "Running deployment on EC2..."
     $deployScript = @"
-sudo mv /tmp/application-ec2.yaml /opt/learningcards/ && sudo chown ubuntu:ubuntu /opt/learningcards/application-ec2.yaml && sudo /opt/learningcards/deploy.sh
+sudo /opt/learningcards/deploy.sh
 "@
     
     ssh -i "$env:USERPROFILE\.ssh\id_rsa" "ubuntu@$publicIp" $deployScript

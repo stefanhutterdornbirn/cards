@@ -4,7 +4,7 @@ ktor:
         modules:
             - com.shut.ApplicationKt.module
     deployment:
-        port: 80
+        port: 5000
         host: 0.0.0.0
         maxResponseSize: 500000000
         watch:
@@ -13,7 +13,7 @@ ktor:
 
 
 postgres:
-  url: "jdbc:postgresql://localhost:5432/demo"
+  url: "jdbc:postgresql://localhost:5432/learningcards"
   user: "postgres"
   password: "afthco99"
   domain: "https://jwt-provider-domain/"

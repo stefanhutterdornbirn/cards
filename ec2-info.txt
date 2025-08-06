@@ -1,10 +1,10 @@
 ﻿Learning Cards App - EC2 Deployment Info
-Generated on: 08/04/2025 11:02:32
+Generated on: 08/06/2025 11:22:07
 
-Public IP: 3.124.169.248
-SSH Command: ssh -i ~/.ssh/id_rsa ubuntu@3.124.169.248
-Application URL: http://3.124.169.248
-SSL Status: SSL disabled or incomplete configuration
+Public IP: 63.179.44.7
+SSH Command: ssh -i ~/.ssh/id_rsa ubuntu@63.179.44.7
+Application URL: https://m3-works.com
+SSL Status: SSL enabled with Let's Encrypt
 
-To connect: ssh -i ~/.ssh/id_rsa ubuntu@3.124.169.248
+To connect: ssh -i ~/.ssh/id_rsa ubuntu@63.179.44.7
 To deploy app: .\deploy-ec2.ps1 deploy-app
