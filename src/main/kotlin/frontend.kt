@@ -10,6 +10,9 @@ import kotlinx.html.*
 
 fun Application.configureFrontend() {
     routing {
+        get("/") {
+            call.respond(FreeMarkerContent("index.ftl", mapOf("data" to DatenIndex(listOf(1, 2, 3))), ""))
+        }
         get("/index.html") {
             call.respond(FreeMarkerContent("index.ftl", mapOf("data" to DatenIndex(listOf(1, 2, 3))), ""))
         }

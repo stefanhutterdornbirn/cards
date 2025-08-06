@@ -155,14 +155,43 @@ fun Application.configureSecurity() {
         post("/register") {
             try {
                 val credentials = call.receive<UserCredentials>()
+                
+                // Check if email is provided
+                if (credentials.email.isNullOrBlank()) {
+                    call.respond(HttpStatusCode.BadRequest, "Email address is required for registration")
+                    return@post
+                }
+                
                 val userID = userCredentialsService.addUserCredentials(credentials)
                 
                 // Assign user to default "Single" group
                 userGroupService.addUserToDefaultGroup(userID)
                 
-                call.respondText("New user was created, id = ${userID.toString()}")
+                // Send verification email
+                val emailVerificationService = EmailVerificationService.create(userCredentialsService)
+                val host = call.request.headers["Host"] ?: "localhost:5000"
+                val scheme = if (call.request.headers["X-Forwarded-Proto"] == "https") "https" else "http"
+                val baseUrl = "$scheme://$host"
+                
+                val emailSent = emailVerificationService.sendVerificationEmail(
+                    userID, credentials.email, credentials.username, baseUrl
+                )
+                
+                if (emailSent) {
+                    call.respond(HttpStatusCode.Created, mapOf(
+                        "message" to "User created successfully. Please check your email to verify your account.",
+                        "userId" to userID,
+                        "emailSent" to true
+                    ))
+                } else {
+                    call.respond(HttpStatusCode.Created, mapOf(
+                        "message" to "User created but email verification could not be sent. Please contact support.",
+                        "userId" to userID,
+                        "emailSent" to false
+                    ))
+                }
             } catch (e: Exception) {
-                call.respond(HttpStatusCode.BadRequest, "A bad thing happend: ${e.localizedMessage}")
+                call.respond(HttpStatusCode.BadRequest, "A bad thing happened: ${e.localizedMessage}")
             }
         }
 
@@ -176,6 +205,16 @@ fun Application.configureSecurity() {
                 // --- HIER IHRE AUTHENTIFIZIERUNGSLOGIK EINFÜGEN ---
                 // Beispiel: Überprüfen Sie Benutzername und Passwort.
                 if (user != null && credentials.password.equals(user.password)) {
+                    // Check if email is verified (skip for admin)
+                    if (!user.emailVerified && user.username != "admin") {
+                        call.respond(HttpStatusCode.Forbidden, mapOf(
+                            "error" to "Email verification required",
+                            "message" to "Please verify your email address before logging in. Check your email for a verification link.",
+                            "emailVerificationRequired" to true
+                        ))
+                        return@post
+                    }
+                    
                     // Bei Erfolg ein JWT generieren
                     val token = JWT.create()
                         .withAudience(jwtAudience)
@@ -191,6 +230,216 @@ fun Application.configureSecurity() {
                 }
             } catch (e: ContentTransformationException) {
                 call.respond(HttpStatusCode.BadRequest, "Could not parse credentials: ${e.localizedMessage}")
+            }
+        }
+
+        // Email Verification Endpoints (Public)
+        get("/verify-email") {
+            val token = call.request.queryParameters["token"]
+            if (token == null) {
+                call.respond(HttpStatusCode.BadRequest, "Verification token is required")
+                return@get
+            }
+            
+            val emailVerificationService = EmailVerificationService.create(userCredentialsService)
+            val result = emailVerificationService.verifyEmailToken(token)
+            
+            when (result) {
+                VerificationResult.SUCCESS -> {
+                    call.respondText(
+                        """
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>Email Verified - Learning Cards</title>
+                            <style>
+                                body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background-color: #f4f4f4; }
+                                .container { max-width: 600px; margin: 0 auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                                .success { color: #28a745; font-size: 24px; margin-bottom: 20px; }
+                                .message { color: #555; font-size: 16px; line-height: 1.6; margin-bottom: 30px; }
+                                .button { display: inline-block; background-color: #007bff; color: white; text-decoration: none; padding: 12px 30px; border-radius: 5px; font-weight: bold; }
+                                .button:hover { background-color: #0056b3; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="container">
+                                <h1 class="success">✅ Email Verified Successfully!</h1>
+                                <p class="message">Your email address has been verified and your account is now active. You can now log in and start using Learning Cards!</p>
+                                <a href="/static/index.html" class="button">Go to Login</a>
+                            </div>
+                        </body>
+                        </html>
+                        """.trimIndent(),
+                        ContentType.Text.Html
+                    )
+                }
+                VerificationResult.ALREADY_VERIFIED -> {
+                    call.respondText(
+                        """
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>Already Verified - Learning Cards</title>
+                            <style>
+                                body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background-color: #f4f4f4; }
+                                .container { max-width: 600px; margin: 0 auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                                .info { color: #17a2b8; font-size: 24px; margin-bottom: 20px; }
+                                .message { color: #555; font-size: 16px; line-height: 1.6; margin-bottom: 30px; }
+                                .button { display: inline-block; background-color: #007bff; color: white; text-decoration: none; padding: 12px 30px; border-radius: 5px; font-weight: bold; }
+                                .button:hover { background-color: #0056b3; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="container">
+                                <h1 class="info">ℹ️ Email Already Verified</h1>
+                                <p class="message">Your email address has already been verified. You can log in to your account.</p>
+                                <a href="/static/index.html" class="button">Go to Login</a>
+                            </div>
+                        </body>
+                        </html>
+                        """.trimIndent(),
+                        ContentType.Text.Html
+                    )
+                }
+                else -> {
+                    call.respondText(
+                        """
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>Verification Failed - Learning Cards</title>
+                            <style>
+                                body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background-color: #f4f4f4; }
+                                .container { max-width: 600px; margin: 0 auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                                .error { color: #dc3545; font-size: 24px; margin-bottom: 20px; }
+                                .message { color: #555; font-size: 16px; line-height: 1.6; margin-bottom: 30px; }
+                                .button { display: inline-block; background-color: #007bff; color: white; text-decoration: none; padding: 12px 30px; border-radius: 5px; font-weight: bold; }
+                                .button:hover { background-color: #0056b3; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="container">
+                                <h1 class="error">❌ Email Verification Failed</h1>
+                                <p class="message">${result.message}</p>
+                                <p class="message">Please try registering again or contact support if you continue to experience issues.</p>
+                                <a href="/static/index.html" class="button">Go to Login</a>
+                            </div>
+                        </body>
+                        </html>
+                        """.trimIndent(),
+                        ContentType.Text.Html
+                    )
+                }
+            }
+        }
+
+        post("/resend-verification") {
+            try {
+                val request = call.receive<Map<String, String>>()
+                val email = request["email"]
+                
+                if (email.isNullOrBlank()) {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Email address is required"))
+                    return@post
+                }
+                
+                val emailVerificationService = EmailVerificationService.create(userCredentialsService)
+                val host = call.request.headers["Host"] ?: "localhost:5000"
+                val scheme = if (call.request.headers["X-Forwarded-Proto"] == "https") "https" else "http"
+                val baseUrl = "$scheme://$host"
+                
+                val result = emailVerificationService.resendVerificationEmail(email, baseUrl)
+                
+                when (result) {
+                    ResendResult.SUCCESS -> {
+                        call.respond(HttpStatusCode.OK, mapOf(
+                            "message" to result.message,
+                            "success" to true
+                        ))
+                    }
+                    ResendResult.ALREADY_VERIFIED -> {
+                        call.respond(HttpStatusCode.OK, mapOf(
+                            "message" to result.message,
+                            "success" to true,
+                            "alreadyVerified" to true
+                        ))
+                    }
+                    else -> {
+                        call.respond(HttpStatusCode.BadRequest, mapOf(
+                            "message" to result.message,
+                            "success" to false
+                        ))
+                    }
+                }
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest, mapOf(
+                    "error" to "Failed to resend verification email: ${e.localizedMessage}"
+                ))
+            }
+        }
+
+        // Manual Code Verification Endpoint (Public)
+        post("/verify-manual-code") {
+            try {
+                val request = call.receive<Map<String, String>>()
+                val verificationCode = request["verificationCode"]
+                
+                if (verificationCode.isNullOrBlank()) {
+                    call.respond(HttpStatusCode.BadRequest, mapOf(
+                        "error" to "Verification code is required",
+                        "message" to "Please provide a verification code",
+                        "verified" to false
+                    ))
+                    return@post
+                }
+                
+                val emailVerificationService = EmailVerificationService.create(userCredentialsService)
+                val result = emailVerificationService.verifyEmailToken(verificationCode)
+                
+                when (result) {
+                    VerificationResult.SUCCESS -> {
+                        call.respond(HttpStatusCode.OK, mapOf(
+                            "verified" to true,
+                            "message" to "Email verification successful",
+                            "success" to true
+                        ))
+                    }
+                    VerificationResult.ALREADY_VERIFIED -> {
+                        call.respond(HttpStatusCode.OK, mapOf(
+                            "verified" to true,
+                            "message" to "Email is already verified",
+                            "success" to true,
+                            "alreadyVerified" to true
+                        ))
+                    }
+                    VerificationResult.TOKEN_NOT_FOUND -> {
+                        call.respond(HttpStatusCode.BadRequest, mapOf(
+                            "verified" to false,
+                            "message" to "Verification code not found or has expired. Please request a new verification email.",
+                            "error" to "expired"
+                        ))
+                    }
+                    VerificationResult.INVALID_TOKEN -> {
+                        call.respond(HttpStatusCode.BadRequest, mapOf(
+                            "verified" to false,
+                            "message" to "Invalid verification code. Please check your code and try again.",
+                            "error" to "invalid"
+                        ))
+                    }
+                    VerificationResult.VERIFICATION_FAILED -> {
+                        call.respond(HttpStatusCode.BadRequest, mapOf(
+                            "verified" to false,
+                            "message" to "Verification process failed. Please try again.",
+                            "error" to "verification_failed"
+                        ))
+                    }
+                }
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError, mapOf(
+                    "verified" to false,
+                    "message" to "Server error during verification: ${e.localizedMessage}",
+                    "error" to "server_error"
+                ))
             }
         }
 

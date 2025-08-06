@@ -92,7 +92,22 @@ export const authenticationTranslations = {
         userAlreadyExistsMessage: 'Ein Benutzer mit diesem Namen oder dieser E-Mail-Adresse ist bereits registriert.',
         wouldYouLikeToLogin: 'Möchten Sie sich stattdessen anmelden?',
         goToLogin: 'Zur Anmeldung',
-        enterDifferentData: 'Andere Daten eingeben'
+        enterDifferentData: 'Andere Daten eingeben',
+        
+        // Email verification messages
+        registrationEmailVerificationRequired: '📧 Registrierung erfolgreich! Bitte überprüfen Sie Ihre E-Mails und klicken Sie auf den Bestätigungslink.',
+        registrationSuccessfulButEmailFailed: '⚠️ Registrierung erfolgreich, aber E-Mail-Versand fehlgeschlagen. Bitte kontaktieren Sie den Support.',
+        emailVerificationTitle: 'E-Mail-Bestätigung erforderlich',
+        step1: 'Schritt 1',
+        step2: 'Schritt 2', 
+        step3: 'Schritt 3',
+        step4: 'Schritt 4',
+        registrationComplete: 'Ihr Konto wurde erfolgreich erstellt',
+        checkYourEmail: 'Überprüfen Sie Ihr E-Mail-Postfach',
+        clickVerificationLink: 'Klicken Sie auf den Bestätigungslink in der E-Mail',
+        thenYouCanLogin: 'Dann können Sie sich anmelden',
+        emailVerificationNote: 'Der Bestätigungslink ist 24 Stunden gültig. Falls Sie keine E-Mail erhalten haben, überprüfen Sie Ihren Spam-Ordner.',
+        understood: 'Verstanden'
     },
     
     en: {
@@ -184,7 +199,22 @@ export const authenticationTranslations = {
         userAlreadyExistsMessage: 'A user with this name or email address is already registered.',
         wouldYouLikeToLogin: 'Would you like to sign in instead?',
         goToLogin: 'Go to Login',
-        enterDifferentData: 'Enter different data'
+        enterDifferentData: 'Enter different data',
+        
+        // Email verification messages
+        registrationEmailVerificationRequired: '📧 Registration successful! Please check your email and click the verification link.',
+        registrationSuccessfulButEmailFailed: '⚠️ Registration successful, but email sending failed. Please contact support.',
+        emailVerificationTitle: 'Email Verification Required',
+        step1: 'Step 1',
+        step2: 'Step 2',
+        step3: 'Step 3',
+        step4: 'Step 4',
+        registrationComplete: 'Your account has been successfully created',
+        checkYourEmail: 'Check your email inbox',
+        clickVerificationLink: 'Click the verification link in the email',
+        thenYouCanLogin: 'Then you can log in',
+        emailVerificationNote: 'The verification link is valid for 24 hours. If you haven\'t received an email, check your spam folder.',
+        understood: 'Understood'
     },
     
     fr: {

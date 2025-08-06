@@ -32,3 +32,13 @@ fileStorage:
     accessKeyId: ""
     secretAccessKey: ""
     sessionToken: ""
+
+smtp:
+  host: "smtp.mailbox.org"
+  port: 465
+  username: "mag.stefan.hutter@m3-works.com"
+  password: "r!w-A8Db$wd?bEA"
+  fromEmail: "mag.stefan.hutter@m3-works.com"
+  fromName: "Learning Cards"
+  enableTLS: true
+  enableAuth: true

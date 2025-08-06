@@ -7,6 +7,7 @@ interface User {
     id: number;
     username: string;
     email: string | null;
+    emailVerified: boolean;
 }
 
 interface Group {
@@ -20,6 +21,7 @@ interface UserWithGroups {
     id: number;
     username: string;
     email: string | null;
+    emailVerified: boolean;
     groups: Group[];
 }
 
@@ -215,6 +217,9 @@ class ManagementSystem {
         const container = document.createElement('div');
         container.className = 'management-container';
 
+        const verifiedUsers = users.filter(user => user.emailVerified).length;
+        const unverifiedUsers = users.filter(user => !user.emailVerified).length;
+        
         const header = document.createElement('div');
         header.className = 'management-header';
         header.innerHTML = `
@@ -223,6 +228,14 @@ class ManagementSystem {
                 <div class="stat-card">
                     <div class="stat-number">${users.length}</div>
                     <div class="stat-label">${i18n.t('management.totalUsers')}</div>
+                </div>
+                <div class="stat-card verified">
+                    <div class="stat-number">${verifiedUsers}</div>
+                    <div class="stat-label">✅ Verified Users</div>
+                </div>
+                <div class="stat-card unverified">
+                    <div class="stat-number">${unverifiedUsers}</div>
+                    <div class="stat-label">⚠️ Unverified Users</div>
                 </div>
             </div>
         `;
@@ -245,12 +258,23 @@ class ManagementSystem {
         const card = document.createElement('div');
         card.className = 'user-card';
         card.setAttribute('data-user-id', user.id.toString());
+        
+        const verificationStatus = user.emailVerified ? 
+            '<span class="email-verified">✅ Verified</span>' : 
+            '<span class="email-unverified">⚠️ Unverified</span>';
+        
+        const verificationClass = user.emailVerified ? 'verified' : 'unverified';
+        card.classList.add(`email-${verificationClass}`);
+        
         card.innerHTML = `
             <div class="user-card-header">
                 <div class="user-avatar">👤</div>
                 <div class="user-info">
                     <h3>${user.username}</h3>
-                    <p class="user-email">${user.email || i18n.t('management.noEmail')}</p>
+                    <p class="user-email">
+                        ${user.email || i18n.t('management.noEmail')}
+                        ${user.email ? verificationStatus : ''}
+                    </p>
                 </div>
                 <div class="user-id">ID: ${user.id}</div>
             </div>
@@ -653,13 +677,20 @@ class ManagementSystem {
                                 <input type="text" id="usersSearchInput" placeholder="Benutzer suchen..." onkeyup="managementSystem.filterAvailableUsers()">
                             </div>
                             <div class="users-list" id="availableUsersList">
-                                ${availableUsers.length > 0 ? availableUsers.map(user => `
-                                    <div class="user-item" data-user-id="${user.id}" data-username="${user.username.toLowerCase()}" data-email="${(user.email || '').toLowerCase()}">
+                                ${availableUsers.length > 0 ? availableUsers.map(user => {
+                                    const verificationStatus = user.emailVerified ? 
+                                        '<span class="email-verified">✅</span>' : 
+                                        '<span class="email-unverified">⚠️</span>';
+                                    return `
+                                    <div class="user-item email-${user.emailVerified ? 'verified' : 'unverified'}" data-user-id="${user.id}" data-username="${user.username.toLowerCase()}" data-email="${(user.email || '').toLowerCase()}">
                                         <div class="user-info">
                                             <div class="user-avatar">👤</div>
                                             <div class="user-details">
                                                 <div class="user-name">${user.username}</div>
-                                                <div class="user-email">${user.email || 'Keine E-Mail'}</div>
+                                                <div class="user-email">
+                                                    ${user.email || 'Keine E-Mail'}
+                                                    ${user.email ? verificationStatus : ''}
+                                                </div>
                                             </div>
                                         </div>
                                         <button class="btn-success btn-small" onclick="managementSystem.addUserToGroup(${user.id}, ${group.id})">
@@ -667,7 +698,8 @@ class ManagementSystem {
                                             ${i18n.t('management.add')}
                                         </button>
                                     </div>
-                                `).join('') : '<div class="no-users">Alle Benutzer sind bereits Mitglieder</div>'}
+                                    `;
+                                }).join('') : '<div class="no-users">Alle Benutzer sind bereits Mitglieder</div>'}
                             </div>
                         </div>
                     </div>

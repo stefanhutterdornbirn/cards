@@ -36,7 +36,10 @@ data class UserCredentials(
     val id: Int? = null,
     val username: String,
     val password: String,
-    val email: String?
+    val email: String?,
+    val emailVerified: Boolean = false,
+    val verificationToken: String? = null,
+    val verificationTokenExpiry: String? = null
 )
 
 // Datenklasse für Passwort-Änderungsanfrage
@@ -51,7 +54,8 @@ data class PasswordChangeRequest(
 data class User(
     val id: Int,
     val username: String,
-    val email: String? = null
+    val email: String? = null,
+    val emailVerified: Boolean = false
 )
 
 // Datenklasse für Gruppen
@@ -230,6 +234,9 @@ object UserCredentialsTab : Table("credentials") {
     val username = varchar("username", 20).uniqueIndex()
     val password = varchar("password", 40)
     val email = varchar("email", 40).nullable()
+    val emailVerified = bool("email_verified").default(false)
+    val verificationToken = varchar("verification_token", 100).nullable()
+    val verificationTokenExpiry = varchar("verification_token_expiry", 50).nullable()
     override val primaryKey = PrimaryKey(id)
 }
 
@@ -344,6 +351,15 @@ class UserCredentialsService {
         transaction {
             if (!SchemaUtils.listTables().contains("credentials")) {
                 SchemaUtils.create(UserCredentialsTab)
+            } else {
+                // Add missing columns if they don't exist (migration)
+                try {
+                    SchemaUtils.addMissingColumnsStatements(UserCredentialsTab).forEach { statement ->
+                        exec(statement)
+                    }
+                } catch (e: Exception) {
+                    // Columns might already exist, that's okay
+                }
             }
             
             // Create default admin user if not exists
@@ -356,6 +372,7 @@ class UserCredentialsService {
                     it[username] = "admin"
                     it[password] = "password"
                     it[email] = "admin@learningcards.system"
+                    it[emailVerified] = true // Admin is pre-verified
                 } get UserCredentialsTab.id
                 
                 println("✅ Default admin user created: username=admin, password=password, id=$adminId")
@@ -444,7 +461,10 @@ class UserCredentialsService {
                         id = it[UserCredentialsTab.id],
                         username = it[UserCredentialsTab.username],
                         password = it[UserCredentialsTab.password],
-                        email = it[UserCredentialsTab.email]
+                        email = it[UserCredentialsTab.email],
+                        emailVerified = it[UserCredentialsTab.emailVerified],
+                        verificationToken = it[UserCredentialsTab.verificationToken],
+                        verificationTokenExpiry = it[UserCredentialsTab.verificationTokenExpiry]
                     )
                 }
                 .firstOrNull()
@@ -552,6 +572,61 @@ class UserCredentialsService {
                 email = user.email,
                 groups = groups
             )
+        }
+    }
+
+    fun updateVerificationToken(userId: Int, token: String, expiry: String) {
+        transaction {
+            UserCredentialsTab.update({ UserCredentialsTab.id eq userId }) {
+                it[verificationToken] = token
+                it[verificationTokenExpiry] = expiry
+            }
+        }
+    }
+
+    fun verifyEmail(token: String): Boolean {
+        return transaction {
+            val now = java.time.ZonedDateTime.now().toString()
+            val user = UserCredentialsTab.selectAll()
+                .where { 
+                    (UserCredentialsTab.verificationToken eq token) and
+                    (UserCredentialsTab.verificationTokenExpiry greater now)
+                }
+                .firstOrNull()
+                
+            if (user != null) {
+                UserCredentialsTab.update({ UserCredentialsTab.verificationToken eq token }) {
+                    it[emailVerified] = true
+                    it[verificationToken] = null
+                    it[verificationTokenExpiry] = null
+                }
+                true
+            } else {
+                false
+            }
+        }
+    }
+
+    fun getUserByVerificationToken(token: String): UserCredentials? {
+        return transaction {
+            val now = java.time.ZonedDateTime.now().toString()
+            UserCredentialsTab.selectAll()
+                .where { 
+                    (UserCredentialsTab.verificationToken eq token) and
+                    (UserCredentialsTab.verificationTokenExpiry greater now)
+                }
+                .map {
+                    UserCredentials(
+                        id = it[UserCredentialsTab.id],
+                        username = it[UserCredentialsTab.username],
+                        password = it[UserCredentialsTab.password],
+                        email = it[UserCredentialsTab.email],
+                        emailVerified = it[UserCredentialsTab.emailVerified],
+                        verificationToken = it[UserCredentialsTab.verificationToken],
+                        verificationTokenExpiry = it[UserCredentialsTab.verificationTokenExpiry]
+                    )
+                }
+                .firstOrNull()
         }
     }
 }

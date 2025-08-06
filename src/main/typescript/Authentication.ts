@@ -5,6 +5,7 @@ interface AuthResponse {
     token?: string;
     message?: string;
     error?: string;
+    emailSent?: boolean;
 }
 
 interface RegistrationData {
@@ -265,7 +266,15 @@ class AuthenticationManager {
             }
 
             if (response.ok) {
-                this.showNotification(i18n.t('auth.registrationSuccessful'), 'success');
+                // Check if email was sent for verification
+                if (data.emailSent === true) {
+                    this.showNotification(i18n.t('auth.registrationEmailVerificationRequired'), 'info');
+                } else if (data.emailSent === false) {
+                    this.showNotification(i18n.t('auth.registrationSuccessfulButEmailFailed'), 'warning');
+                } else {
+                    // Fallback for older backend responses
+                    this.showNotification(data.message || i18n.t('auth.registrationSuccessful'), 'success');
+                }
                 
                 // Clear form
                 usernameInput.value = '';
@@ -273,10 +282,15 @@ class AuthenticationManager {
                 passwordInput.value = '';
                 confirmPasswordInput.value = '';
                 
-                // Switch to login form
-                this.switchToLoginForm();
+                // Don't automatically switch to login form - keep user on registration form to show the message clearly
+                // The user will manually switch when ready
                 
-                // Pre-fill username in login form
+                // Show additional info about email verification
+                if (data.emailSent === true) {
+                    this.showEmailVerificationInfo();
+                }
+                
+                // Pre-fill username in login form for when user switches
                 const loginUsernameInput = document.getElementById('fullscreenUsername') as HTMLInputElement;
                 if (loginUsernameInput) {
                     loginUsernameInput.value = registrationData.username;
@@ -486,6 +500,351 @@ class AuthenticationManager {
         console.log('User products:', productNames);
     }
 
+    private showEmailVerificationInfo(): void {
+        // Replace the registration form content with verification instructions
+        const registerFormContainer = document.getElementById('registerFormContainer');
+        if (!registerFormContainer) return;
+
+        // Hide the actual form and show verification instructions
+        const originalContent = registerFormContainer.innerHTML;
+        
+        registerFormContainer.innerHTML = `
+            <div class="email-verification-success">
+                <div class="verification-header">
+                    <h2>📧 ${i18n.t('auth.emailVerificationTitle')}</h2>
+                    <p class="verification-subtitle">Ihr Konto wurde erfolgreich erstellt!</p>
+                </div>
+                
+                <div class="verification-steps">
+                    <div class="step-item">
+                        <div class="step-icon">✅</div>
+                        <div class="step-content">
+                            <strong>${i18n.t('auth.step1')}:</strong> ${i18n.t('auth.registrationComplete')}
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-icon">📩</div>
+                        <div class="step-content">
+                            <strong>${i18n.t('auth.step2')}:</strong> ${i18n.t('auth.checkYourEmail')}
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-icon">🔗</div>
+                        <div class="step-content">
+                            <strong>${i18n.t('auth.step3')}:</strong> ${i18n.t('auth.clickVerificationLink')}
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-icon">🔑</div>
+                        <div class="step-content">
+                            <strong>${i18n.t('auth.step4')}:</strong> ${i18n.t('auth.thenYouCanLogin')}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="verification-note">
+                    <div class="note-icon">⚠️</div>
+                    <div class="note-content">
+                        <p><em>${i18n.t('auth.emailVerificationNote')}</em></p>
+                    </div>
+                </div>
+                
+                <div class="verification-manual">
+                    <div class="manual-verification-section">
+                        <h4>🔑 Alternativ: Verifikationscode eingeben</h4>
+                        <p>Falls der Link nicht funktioniert, können Sie auch Ihren Verifikationscode hier eingeben:</p>
+                        <div class="manual-input-group">
+                            <input type="text" id="manualVerificationCode" placeholder="Verifikationscode eingeben..." class="verification-code-input">
+                            <button class="btn-verify" onclick="window.authenticationSystem.verifyManualCode()">
+                                Bestätigen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="verification-actions">
+                    <button class="btn-primary" onclick="window.authenticationSystem.switchToLoginForm()">
+                        ${i18n.t('auth.goToLogin')}
+                    </button>
+                    <button class="btn-secondary" onclick="window.authenticationSystem.restoreRegistrationForm()">
+                        Neue Registrierung
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Add CSS for the new layout
+        const style = document.createElement('style');
+        style.textContent = `
+            .email-verification-success {
+                padding: 30px;
+                text-align: center;
+                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                border-radius: 15px;
+                margin: 20px 0;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            }
+
+            .verification-header h2 {
+                color: #28a745;
+                margin-bottom: 10px;
+                font-size: 28px;
+            }
+
+            .verification-subtitle {
+                color: #495057;
+                font-size: 18px;
+                margin-bottom: 30px;
+            }
+
+            .verification-steps {
+                text-align: left;
+                max-width: 500px;
+                margin: 0 auto 30px;
+            }
+
+            .step-item {
+                display: flex;
+                align-items: flex-start;
+                margin-bottom: 20px;
+                padding: 15px;
+                background: white;
+                border-radius: 10px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+                border-left: 4px solid #28a745;
+            }
+
+            .step-icon {
+                font-size: 24px;
+                margin-right: 15px;
+                flex-shrink: 0;
+            }
+
+            .step-content {
+                font-size: 16px;
+                line-height: 1.5;
+            }
+
+            .verification-note {
+                display: flex;
+                align-items: flex-start;
+                background: #fff3cd;
+                border: 1px solid #ffeaa7;
+                border-radius: 10px;
+                padding: 15px;
+                margin: 20px auto;
+                max-width: 500px;
+                text-align: left;
+            }
+
+            .note-icon {
+                font-size: 20px;
+                margin-right: 10px;
+                flex-shrink: 0;
+            }
+
+            .note-content {
+                font-size: 14px;
+                color: #856404;
+                line-height: 1.4;
+            }
+
+            .verification-actions {
+                display: flex;
+                justify-content: center;
+                gap: 15px;
+                margin-top: 30px;
+            }
+
+            .verification-actions .btn-primary,
+            .verification-actions .btn-secondary {
+                padding: 12px 25px;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: 500;
+                transition: all 0.3s ease;
+                min-width: 150px;
+            }
+
+            .verification-actions .btn-primary {
+                background: #28a745;
+                color: white;
+            }
+
+            .verification-actions .btn-primary:hover {
+                background: #218838;
+                transform: translateY(-2px);
+            }
+
+            .verification-actions .btn-secondary {
+                background: #6c757d;
+                color: white;
+            }
+
+            .verification-actions .btn-secondary:hover {
+                background: #5a6268;
+                transform: translateY(-2px);
+            }
+
+            .verification-manual {
+                margin: 25px auto;
+                max-width: 500px;
+            }
+
+            .manual-verification-section {
+                background: #f8f9fa;
+                border: 2px dashed #6c757d;
+                border-radius: 10px;
+                padding: 20px;
+                text-align: center;
+            }
+
+            .manual-verification-section h4 {
+                margin: 0 0 10px 0;
+                color: #495057;
+                font-size: 18px;
+            }
+
+            .manual-verification-section p {
+                margin: 0 0 15px 0;
+                color: #6c757d;
+                font-size: 14px;
+            }
+
+            .manual-input-group {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+
+            .verification-code-input {
+                flex: 1;
+                padding: 12px;
+                border: 2px solid #dee2e6;
+                border-radius: 8px;
+                font-size: 14px;
+                font-family: monospace;
+                text-align: center;
+                letter-spacing: 1px;
+            }
+
+            .verification-code-input:focus {
+                outline: none;
+                border-color: #007bff;
+                box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+            }
+
+            .btn-verify {
+                padding: 12px 20px;
+                background: #007bff;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+                transition: all 0.3s ease;
+                min-width: 100px;
+            }
+
+            .btn-verify:hover {
+                background: #0056b3;
+                transform: translateY(-2px);
+            }
+        `;
+
+        document.head.appendChild(style);
+
+        // Store original content for restoration
+        (this as any).originalRegisterContent = originalContent;
+    }
+
+    public restoreRegistrationForm(): void {
+        const registerFormContainer = document.getElementById('registerFormContainer');
+        if (registerFormContainer && (this as any).originalRegisterContent) {
+            registerFormContainer.innerHTML = (this as any).originalRegisterContent;
+            
+            // Re-setup event listeners for the restored form
+            const registerForm = document.getElementById('fullscreenRegisterForm');
+            const registerSubmit = document.querySelector('#registerFormContainer .fullscreen-login-submit');
+            
+            registerForm?.addEventListener('submit', (e) => this.handleRegistration(e));
+            registerSubmit?.addEventListener('click', (e) => this.handleRegistration(e));
+        }
+    }
+
+    public async verifyManualCode(): Promise<void> {
+        const codeInput = document.getElementById('manualVerificationCode') as HTMLInputElement;
+        const verifyButton = document.querySelector('.btn-verify') as HTMLButtonElement;
+        
+        if (!codeInput || !verifyButton) {
+            this.showNotification('Verification elements not found', 'error');
+            return;
+        }
+
+        const verificationCode = codeInput.value.trim();
+        if (!verificationCode) {
+            this.showNotification('Bitte geben Sie den Verifikationscode ein', 'error');
+            codeInput.focus();
+            return;
+        }
+
+        // Show loading state
+        verifyButton.disabled = true;
+        const originalContent = verifyButton.innerHTML;
+        verifyButton.innerHTML = '⏳ Überprüfen...';
+
+        try {
+            const response = await fetch('/verify-manual-code', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ verificationCode })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.verified === true) {
+                this.showNotification('✅ E-Mail erfolgreich bestätigt! Sie können sich jetzt anmelden.', 'success');
+                
+                // Clear the input
+                codeInput.value = '';
+                
+                // Switch to login form after a short delay
+                setTimeout(() => {
+                    this.switchToLoginForm();
+                }, 2000);
+            } else {
+                let errorMessage = 'Verifikation fehlgeschlagen. Bitte überprüfen Sie Ihren Code.';
+                
+                if (data.message) {
+                    const message = data.message.toLowerCase();
+                    if (message.includes('expired') || message.includes('abgelaufen')) {
+                        errorMessage = 'Der Verifikationscode ist abgelaufen. Bitte fordern Sie eine neue E-Mail an.';
+                    } else if (message.includes('invalid') || message.includes('ungültig')) {
+                        errorMessage = 'Ungültiger Verifikationscode. Bitte überprüfen Sie Ihre Eingabe.';
+                    } else if (message.includes('not found') || message.includes('nicht gefunden')) {
+                        errorMessage = 'Verifikationscode nicht gefunden. Bitte überprüfen Sie Ihre Eingabe.';
+                    }
+                }
+                
+                this.showNotification(errorMessage, 'error');
+                codeInput.focus();
+                codeInput.select();
+            }
+        } catch (error) {
+            console.error('Manual verification error:', error);
+            this.showNotification('Verifikation fehlgeschlagen. Bitte versuchen Sie es später erneut.', 'error');
+        } finally {
+            // Reset button state
+            verifyButton.disabled = false;
+            verifyButton.innerHTML = originalContent;
+        }
+    }
+
     private hideAllProductMenus(): void {
         this.toggleMenuVisibility('cardsMenu', false);
         this.toggleMenuVisibility('imageLink', false);
@@ -614,7 +973,7 @@ class AuthenticationManager {
         }, 10000);
     }
 
-    private showNotification(message: string, type: 'success' | 'error' | 'info' = 'info'): void {
+    private showNotification(message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info'): void {
         // Remove existing notification if any
         const existingNotification = document.querySelector('.notification');
         if (existingNotification) {

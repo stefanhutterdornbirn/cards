@@ -57,6 +57,10 @@ dependencies {
     implementation("com.google.genai:google-genai:1.7.0")
     implementation("com.google.auth:google-auth-library-oauth2-http:1.37.1")
     implementation("com.google.auth:google-auth-library-credentials:1.37.1")
+    
+    // Email support
+    implementation("javax.mail:javax.mail-api:1.6.2")
+    implementation("com.sun.mail:javax.mail:1.6.2")
     implementation("io.ktor:ktor-server-html-builder-jvm:3.2.1")
     implementation("org.apache.pdfbox:pdfbox:2.0.30")
     implementation("net.lingala.zip4j:zip4j:2.11.5")

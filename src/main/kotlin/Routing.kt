@@ -90,9 +90,6 @@ fun Application.configureRouting() {
     }
 
     routing {
-        get("/") {
-            call.respondText("Hello World!")
-        }
         get("/health") {
             try {
                 val healthData = mutableMapOf<String, Any>(

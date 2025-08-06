@@ -44,3 +44,52 @@ h1.page-title {
     font-weight: 600;
     margin-bottom: var(--spacing-lg);
 }
+
+/* Email Verification Styles */
+.email-verified {
+    color: #28a745;
+    font-size: 0.85em;
+    font-weight: 500;
+    margin-left: var(--spacing-xs);
+}
+
+.email-unverified {
+    color: #ffc107;
+    font-size: 0.85em;
+    font-weight: 500;
+    margin-left: var(--spacing-xs);
+}
+
+/* User card email verification indicators */
+.user-card.email-verified {
+    border-left: 4px solid #28a745;
+}
+
+.user-card.email-unverified {
+    border-left: 4px solid #ffc107;
+}
+
+/* Management stats for verified/unverified users */
+.management-stats .stat-card.verified {
+    border-left: 4px solid #28a745;
+}
+
+.management-stats .stat-card.unverified {
+    border-left: 4px solid #ffc107;
+}
+
+.management-stats .stat-card.verified .stat-label {
+    color: #28a745;
+}
+
+.management-stats .stat-card.unverified .stat-label {
+    color: #ffc107;
+}
+
+/* Additional user email styling */
+.user-email {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    flex-wrap: wrap;
+}
