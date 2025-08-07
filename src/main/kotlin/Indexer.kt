@@ -14,6 +14,66 @@ import java.nio.file.Paths
 import storage.FileStorageFactory
 import storage.FileStorage
 import io.ktor.server.application.*
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+import kotlinx.coroutines.*
+
+/**
+ * Job status tracking for async S3 indexing operations
+ */
+enum class IndexJobStatus {
+    PENDING, RUNNING, COMPLETED, FAILED, CANCELLED
+}
+
+data class IndexJob(
+    val id: String,
+    val bucketName: String,
+    val prefix: String,
+    var status: IndexJobStatus = IndexJobStatus.PENDING,
+    var message: String = "Job created",
+    var totalDirectories: Int = 0,
+    var totalFiles: Int = 0,
+    var uniqueFiles: Int = 0,
+    var processedFiles: Int = 0,
+    var currentFile: String? = null,
+    val startTime: Long = System.currentTimeMillis(),
+    var endTime: Long? = null,
+    var error: String? = null
+) {
+    val duration: Long?
+        get() = endTime?.let { it - startTime }
+    
+    val progress: Double
+        get() = if (totalFiles > 0) (processedFiles.toDouble() / totalFiles) * 100.0 else 0.0
+}
+
+/**
+ * Global job tracker for S3 indexing operations
+ */
+object IndexJobTracker {
+    private val jobs = ConcurrentHashMap<String, IndexJob>()
+    
+    fun createJob(bucketName: String, prefix: String): String {
+        val jobId = UUID.randomUUID().toString()
+        val job = IndexJob(jobId, bucketName, prefix)
+        jobs[jobId] = job
+        return jobId
+    }
+    
+    fun getJob(jobId: String): IndexJob? = jobs[jobId]
+    
+    fun updateJob(jobId: String, update: IndexJob.() -> Unit) {
+        jobs[jobId]?.let { job ->
+            job.update()
+        }
+    }
+    
+    fun getAllJobs(): List<IndexJob> = jobs.values.toList()
+    
+    fun removeJob(jobId: String) {
+        jobs.remove(jobId)
+    }
+}
 
 fun startIndexer() {
     // For backward compatibility, try local first, then S3
@@ -215,6 +275,35 @@ data class IndexResult(
 )
 
 /**
+ * Start async S3 indexing job and return job ID immediately
+ */
+fun startAsyncS3Indexing(bucketName: String, s3Prefix: String = "learning-materials/"): String {
+    val jobId = IndexJobTracker.createJob(bucketName, s3Prefix)
+    
+    // Start the indexing in a separate coroutine
+    GlobalScope.launch {
+        try {
+            IndexJobTracker.updateJob(jobId) {
+                status = IndexJobStatus.RUNNING
+                message = "Starting S3 indexing..."
+            }
+            
+            indexFromS3BucketWithProgress(jobId, bucketName, s3Prefix)
+            
+        } catch (e: Exception) {
+            IndexJobTracker.updateJob(jobId) {
+                status = IndexJobStatus.FAILED
+                error = e.message
+                message = "S3 indexing failed: ${e.message}"
+                endTime = System.currentTimeMillis()
+            }
+        }
+    }
+    
+    return jobId
+}
+
+/**
  * Index files from S3 bucket with specified bucket name
  * This function is called via API with bucket name parameter
  */
@@ -234,6 +323,22 @@ fun indexFromS3Bucket(bucketName: String, s3Prefix: String = "learning-materials
             totalFiles = 0,
             uniqueFiles = 0
         )
+    }
+}
+
+/**
+ * Index files from S3 bucket with progress tracking
+ */
+private fun indexFromS3BucketWithProgress(jobId: String, bucketName: String, s3Prefix: String) {
+    println("Starting S3 indexing from bucket: $bucketName with prefix: $s3Prefix (Job: $jobId)")
+    
+    try {
+        // Create S3 FileStorage instance with provided bucket name
+        val fileStorage = FileStorageFactory.createS3FileStorage(bucketName)
+        processS3FilesWithProgress(jobId, fileStorage, s3Prefix, bucketName)
+    } catch (e: Exception) {
+        println("S3 indexing failed for bucket $bucketName: ${e.message}")
+        throw e
     }
 }
 
@@ -383,6 +488,195 @@ private fun processS3Files(fileStorage: FileStorage, s3Prefix: String, bucketNam
         totalFiles = totalFiles,
         uniqueFiles = uniqueFiles
     )
+}
+
+/**
+ * Process S3 files with progress tracking
+ */
+private fun processS3FilesWithProgress(jobId: String, fileStorage: FileStorage, s3Prefix: String, bucketName: String) {
+    // Get all files from S3 with the given prefix
+    val allFiles = fileStorage.listFiles(s3Prefix)
+    println("Found ${allFiles.size} files in S3 bucket $bucketName with prefix: $s3Prefix")
+    
+    IndexJobTracker.updateJob(jobId) {
+        message = "Found ${allFiles.size} files in S3"
+    }
+    
+    if (allFiles.isEmpty()) {
+        IndexJobTracker.updateJob(jobId) {
+            status = IndexJobStatus.COMPLETED
+            message = "No files found in S3 bucket with prefix: $s3Prefix"
+            endTime = System.currentTimeMillis()
+        }
+        return
+    }
+    
+    // Group files by "directory" (common prefix before last slash)
+    val directoriesMap = allFiles
+        .filter { !it.endsWith("/") } // Skip directory markers
+        .groupBy { file ->
+            // Extract directory name from S3 key
+            val pathParts = file.removePrefix(s3Prefix).split("/")
+            if (pathParts.size > 1) pathParts[0] else "root"
+        }
+    
+    if (directoriesMap.isEmpty()) {
+        IndexJobTracker.updateJob(jobId) {
+            status = IndexJobStatus.COMPLETED
+            message = "No valid directories found in S3 files"
+            endTime = System.currentTimeMillis()
+        }
+        return
+    }
+    
+    // Update job with totals
+    val totalFilesCount = directoriesMap.values.flatten().size
+    IndexJobTracker.updateJob(jobId) {
+        totalDirectories = directoriesMap.size
+        totalFiles = totalFilesCount
+        message = "Processing ${directoriesMap.size} directories with $totalFilesCount files"
+    }
+    
+    // Initialize services
+    val cas = ContentAddressableStorage.create()
+    val lms = LernmaterialService()
+    lms.initialize()
+    val mcardService = MCardService()
+    
+    // Load stopwords
+    val stopwords = try {
+        Files.readAllLines(Paths.get("stopwords/deutsche_stopwords_nltk.txt")).toSet()
+    } catch (e: Exception) {
+        println("Warning: Could not load stopwords file: ${e.message}")
+        emptySet()
+    }
+    
+    // Create main packet
+    val logoImage = mcardService.getImagebyID(1)
+    val packet = Packet(
+        0,
+        "S3 Materials: $bucketName",
+        "Materials indexed from S3 bucket: $bucketName",
+        logoImage
+    )
+    packet.id = lms.addPacket(packet)
+    
+    // Format for file sizes
+    val sizeFormatter = DecimalFormat("#,###")
+    val processedHashes = mutableMapOf<String, String>()
+    var processedFilesCount = 0
+    var uniqueFiles = 0
+    
+    println("Processing ${directoriesMap.size} directories from S3 bucket $bucketName...")
+    
+    // Process each directory
+    directoriesMap.forEach { (directoryName, files) ->
+        println("Processing S3 directory: $directoryName (${files.size} files)")
+        
+        IndexJobTracker.updateJob(jobId) {
+            message = "Processing directory: $directoryName"
+        }
+        
+        val materialien: MutableList<Material> = mutableListOf()
+        
+        files.forEach { s3Key ->
+            try {
+                val fileName = s3Key.substringAfterLast("/")
+                
+                IndexJobTracker.updateJob(jobId) {
+                    currentFile = fileName
+                    message = "Processing file: $fileName in $directoryName"
+                }
+                
+                val fileExtension = fileName.substringAfterLast('.', "bin")
+                
+                // Get file size from S3
+                val fileSize = fileStorage.getFileSize(s3Key) ?: 0L
+                val formattedSize = sizeFormatter.format(fileSize)
+                
+                // Download file to temporary location for processing
+                val tempFile = downloadS3FileToTemp(fileStorage, s3Key)
+                
+                if (tempFile != null) {
+                    try {
+                        // Store in CAS
+                        val storageResult = cas.store(tempFile)
+                        val contentId = storageResult.hash
+                        
+                        // Track unique files
+                        if (!processedHashes.containsKey(contentId)) {
+                            processedHashes[contentId] = contentId
+                            uniqueFiles++
+                        }
+                        
+                        // Extract text content
+                        val content = extractTextFromPdf(tempFile.absolutePath)
+                        val cleanContent = removeStopwords(content, stopwords)
+                        
+                        // Add to materials
+                        materialien.add(
+                            Material(
+                                0,
+                                fileName,
+                                fileExtension,
+                                fileSize,
+                                contentId,
+                                cleanContent
+                            )
+                        )
+                        
+                        processedFilesCount++
+                        
+                        IndexJobTracker.updateJob(jobId) {
+                            processedFiles = processedFilesCount
+                            this.uniqueFiles = uniqueFiles
+                            message = "Processed $processedFilesCount/$totalFilesCount files"
+                        }
+                        
+                        println("Processed S3 file: $fileName ($formattedSize bytes) [$processedFilesCount/$totalFilesCount]")
+                        
+                    } finally {
+                        // Clean up temp file
+                        tempFile.delete()
+                    }
+                } else {
+                    println("Warning: Could not download S3 file: $s3Key")
+                    processedFilesCount++
+                    IndexJobTracker.updateJob(jobId) {
+                        processedFiles = processedFilesCount
+                    }
+                }
+                
+            } catch (e: Exception) {
+                println("Error processing S3 file $s3Key: ${e.message}")
+                processedFilesCount++
+                IndexJobTracker.updateJob(jobId) {
+                    processedFiles = processedFilesCount
+                    message = "Error processing file: ${e.message}"
+                }
+            }
+        }
+        
+        // Create and save Unterlage
+        if (materialien.isNotEmpty()) {
+            val unterlage = Unterlage(0, packet, directoryName, materialien)
+            unterlage.id = lms.addUnterlage(unterlage)
+            println("Saved S3 directory to database: $directoryName with ${materialien.size} materials")
+        }
+    }
+    
+    // Mark job as completed
+    IndexJobTracker.updateJob(jobId) {
+        status = IndexJobStatus.COMPLETED
+        message = "S3 indexing completed successfully from bucket: $bucketName"
+        endTime = System.currentTimeMillis()
+        currentFile = null
+    }
+    
+    println("S3 indexing completed successfully!")
+    println("Total directories processed: ${directoriesMap.size}")
+    println("Total files processed: $processedFilesCount")
+    println("Unique files stored: $uniqueFiles")
 }
 
 fun index(dir: String) {

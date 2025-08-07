@@ -473,7 +473,7 @@ fun Application.configureRouting() {
                 startIndexer()
             }
 
-            // S3 Indexing endpoint - POST with bucket name parameter
+            // S3 Indexing endpoint - POST with bucket name parameter (Async)
             post("/index/s3") {
                 try {
                     val request = call.receive<Map<String, String>>()
@@ -487,25 +487,104 @@ fun Application.configureRouting() {
                         return@post
                     }
                     
-                    println("Starting S3 indexing for bucket: $bucketName with prefix: $s3Prefix")
+                    println("Starting async S3 indexing for bucket: $bucketName with prefix: $s3Prefix")
                     
-                    // Call the S3 indexing function
-                    val result = indexFromS3Bucket(bucketName, s3Prefix)
+                    // Start async S3 indexing and get job ID
+                    val jobId = startAsyncS3Indexing(bucketName, s3Prefix)
                     
-                    call.respond(HttpStatusCode.OK, mapOf(
-                        "success" to result.success,
-                        "message" to result.message,
+                    call.respond(HttpStatusCode.Accepted, mapOf(
+                        "jobId" to jobId,
+                        "message" to "S3 indexing job started",
                         "bucketName" to bucketName,
                         "prefix" to s3Prefix,
-                        "totalDirectories" to result.totalDirectories,
-                        "totalFiles" to result.totalFiles,
-                        "uniqueFiles" to result.uniqueFiles
+                        "status" to "PENDING"
                     ))
                     
                 } catch (e: Exception) {
                     println("S3 indexing API error: ${e.message}")
                     call.respond(HttpStatusCode.InternalServerError, mapOf(
-                        "error" to "S3 indexing failed",
+                        "error" to "Failed to start S3 indexing job",
+                        "message" to e.message
+                    ))
+                }
+            }
+
+            // S3 Indexing status endpoint - GET with job ID parameter
+            get("/index/s3/status/{jobId}") {
+                try {
+                    val jobId = call.parameters["jobId"]
+                    
+                    if (jobId.isNullOrBlank()) {
+                        call.respond(HttpStatusCode.BadRequest, mapOf(
+                            "error" to "jobId is required"
+                        ))
+                        return@get
+                    }
+                    
+                    val job = IndexJobTracker.getJob(jobId)
+                    
+                    if (job == null) {
+                        call.respond(HttpStatusCode.NotFound, mapOf(
+                            "error" to "Job not found",
+                            "jobId" to jobId
+                        ))
+                        return@get
+                    }
+                    
+                    call.respond(HttpStatusCode.OK, mapOf(
+                        "jobId" to job.id,
+                        "bucketName" to job.bucketName,
+                        "prefix" to job.prefix,
+                        "status" to job.status.name,
+                        "message" to job.message,
+                        "progress" to job.progress,
+                        "totalDirectories" to job.totalDirectories,
+                        "totalFiles" to job.totalFiles,
+                        "processedFiles" to job.processedFiles,
+                        "uniqueFiles" to job.uniqueFiles,
+                        "currentFile" to job.currentFile,
+                        "startTime" to job.startTime,
+                        "endTime" to job.endTime,
+                        "duration" to job.duration,
+                        "error" to job.error
+                    ))
+                    
+                } catch (e: Exception) {
+                    println("S3 indexing status API error: ${e.message}")
+                    call.respond(HttpStatusCode.InternalServerError, mapOf(
+                        "error" to "Failed to get job status",
+                        "message" to e.message
+                    ))
+                }
+            }
+
+            // S3 Indexing jobs list endpoint - GET all jobs
+            get("/index/s3/jobs") {
+                try {
+                    val jobs = IndexJobTracker.getAllJobs()
+                    
+                    call.respond(HttpStatusCode.OK, mapOf(
+                        "jobs" to jobs.map { job ->
+                            mapOf(
+                                "jobId" to job.id,
+                                "bucketName" to job.bucketName,
+                                "prefix" to job.prefix,
+                                "status" to job.status.name,
+                                "message" to job.message,
+                                "progress" to job.progress,
+                                "totalFiles" to job.totalFiles,
+                                "processedFiles" to job.processedFiles,
+                                "startTime" to job.startTime,
+                                "endTime" to job.endTime,
+                                "duration" to job.duration
+                            )
+                        }
+                    ))
+                    
+                } catch (e: Exception) {
+                    println("S3 indexing jobs list API error: ${e.message}")
+                    call.respond(HttpStatusCode.InternalServerError, mapOf(
+                        "error" to "Failed to get jobs list",
                         "message" to e.message
                     ))
                 }
