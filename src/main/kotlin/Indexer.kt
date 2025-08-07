@@ -11,9 +11,378 @@ import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.text.PDFTextStripper
 import java.io.IOException
 import java.nio.file.Paths
+import storage.FileStorageFactory
+import storage.FileStorage
+import io.ktor.server.application.*
 
 fun startIndexer() {
-    index("data/data")
+    // For backward compatibility, try local first, then S3
+    try {
+        indexS3("learning-materials/")
+    } catch (e: Exception) {
+        println("S3 indexing failed, falling back to local: ${e.message}")
+        index("data/data")
+    }
+}
+
+/**
+ * Index files from S3 bucket
+ */
+fun indexS3(s3Prefix: String = "learning-materials/") {
+    println("Starting S3 indexing with prefix: $s3Prefix")
+    
+    // Create S3 FileStorage instance
+    val fileStorage = try {
+        FileStorageFactory.createS3FileStorage("your-bucket-name") // Replace with actual bucket name
+    } catch (e: Exception) {
+        println("Failed to create S3 storage: ${e.message}")
+        throw e
+    }
+    
+    // Get all files from S3 with the given prefix
+    val allFiles = fileStorage.listFiles(s3Prefix)
+    println("Found ${allFiles.size} files in S3 with prefix: $s3Prefix")
+    
+    if (allFiles.isEmpty()) {
+        println("No files found in S3 bucket with prefix: $s3Prefix")
+        return
+    }
+    
+    // Group files by "directory" (common prefix before last slash)
+    val directoriesMap = allFiles
+        .filter { !it.endsWith("/") } // Skip directory markers
+        .groupBy { file ->
+            // Extract directory name from S3 key
+            val pathParts = file.removePrefix(s3Prefix).split("/")
+            if (pathParts.size > 1) pathParts[0] else "root"
+        }
+    
+    if (directoriesMap.isEmpty()) {
+        println("No valid directories found in S3 files")
+        return
+    }
+    
+    // Initialize services
+    val cas = ContentAddressableStorage.create()
+    val lms = LernmaterialService()
+    lms.initialize()
+    val mcardService = MCardService()
+    
+    // Load stopwords
+    val stopwords = try {
+        Files.readAllLines(Paths.get("stopwords/deutsche_stopwords_nltk.txt")).toSet()
+    } catch (e: Exception) {
+        println("Warning: Could not load stopwords file: ${e.message}")
+        emptySet()
+    }
+    
+    // Create main packet
+    val logoImage = mcardService.getImagebyID(1)
+    val packet = Packet(
+        0,
+        "S3 Learning Materials",
+        "Materials indexed from S3 bucket",
+        logoImage
+    )
+    packet.id = lms.addPacket(packet)
+    
+    // Format for file sizes
+    val sizeFormatter = DecimalFormat("#,###")
+    val processedHashes = mutableMapOf<String, String>()
+    var totalFiles = 0
+    var uniqueFiles = 0
+    
+    println("Processing ${directoriesMap.size} directories from S3...")
+    
+    // Process each directory
+    directoriesMap.forEach { (directoryName, files) ->
+        println("Processing S3 directory: $directoryName (${files.size} files)")
+        
+        // Extract keywords from directory name
+        val keywords = directoryName
+            .split(" ", "-", "_")
+            .filter { it.isNotBlank() }
+            .map { it.trim() }
+            .distinct()
+        
+        val materialien: MutableList<Material> = mutableListOf()
+        
+        files.forEach { s3Key ->
+            try {
+                val fileName = s3Key.substringAfterLast("/")
+                val fileExtension = fileName.substringAfterLast('.', "bin")
+                
+                // Get file size from S3
+                val fileSize = fileStorage.getFileSize(s3Key) ?: 0L
+                val formattedSize = sizeFormatter.format(fileSize)
+                
+                // Download file to temporary location for processing
+                val tempFile = downloadS3FileToTemp(fileStorage, s3Key)
+                
+                if (tempFile != null) {
+                    try {
+                        // Store in CAS
+                        val storageResult = cas.store(tempFile)
+                        val contentId = storageResult.hash
+                        
+                        // Track unique files
+                        if (!processedHashes.containsKey(contentId)) {
+                            processedHashes[contentId] = contentId
+                            uniqueFiles++
+                        }
+                        
+                        // Extract text content
+                        val content = extractTextFromPdf(tempFile.absolutePath)
+                        val cleanContent = removeStopwords(content, stopwords)
+                        
+                        // Add to materials
+                        materialien.add(
+                            Material(
+                                0,
+                                fileName,
+                                fileExtension,
+                                fileSize,
+                                contentId,
+                                cleanContent
+                            )
+                        )
+                        
+                        totalFiles++
+                        println("Processed S3 file: $fileName ($formattedSize bytes)")
+                        
+                    } finally {
+                        // Clean up temp file
+                        tempFile.delete()
+                    }
+                } else {
+                    println("Warning: Could not download S3 file: $s3Key")
+                }
+                
+            } catch (e: Exception) {
+                println("Error processing S3 file $s3Key: ${e.message}")
+            }
+        }
+        
+        // Create and save Unterlage
+        if (materialien.isNotEmpty()) {
+            val unterlage = Unterlage(0, packet, directoryName, materialien)
+            unterlage.id = lms.addUnterlage(unterlage)
+            println("Saved S3 directory to database: $directoryName with ${materialien.size} materials")
+        }
+    }
+    
+    println("S3 indexing completed!")
+    println("Total directories processed: ${directoriesMap.size}")
+    println("Total files processed: $totalFiles")
+    println("Unique files stored: $uniqueFiles")
+}
+
+/**
+ * Helper function to download S3 file to temporary location
+ */
+private fun downloadS3FileToTemp(fileStorage: FileStorage, s3Key: String): File? {
+    return try {
+        val inputStream = fileStorage.readFile(s3Key) ?: return null
+        
+        // Create temp file
+        val fileName = s3Key.substringAfterLast("/")
+        val fileExtension = fileName.substringAfterLast(".", "tmp")
+        val tempFile = Files.createTempFile("s3_download_", ".$fileExtension").toFile()
+        
+        // Copy content
+        inputStream.use { input ->
+            tempFile.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+        
+        tempFile
+    } catch (e: Exception) {
+        println("Error downloading S3 file $s3Key to temp: ${e.message}")
+        null
+    }
+}
+
+/**
+ * Result of indexing operation
+ */
+data class IndexResult(
+    val success: Boolean,
+    val message: String,
+    val totalDirectories: Int,
+    val totalFiles: Int,
+    val uniqueFiles: Int
+)
+
+/**
+ * Index files from S3 bucket with specified bucket name
+ * This function is called via API with bucket name parameter
+ */
+fun indexFromS3Bucket(bucketName: String, s3Prefix: String = "learning-materials/"): IndexResult {
+    println("Starting S3 indexing from bucket: $bucketName with prefix: $s3Prefix")
+    
+    return try {
+        // Create S3 FileStorage instance with provided bucket name
+        val fileStorage = FileStorageFactory.createS3FileStorage(bucketName)
+        processS3Files(fileStorage, s3Prefix, bucketName)
+    } catch (e: Exception) {
+        println("S3 indexing failed for bucket $bucketName: ${e.message}")
+        IndexResult(
+            success = false,
+            message = "S3 indexing failed: ${e.message}",
+            totalDirectories = 0,
+            totalFiles = 0,
+            uniqueFiles = 0
+        )
+    }
+}
+
+/**
+ * Process S3 files and return IndexResult
+ */
+private fun processS3Files(fileStorage: FileStorage, s3Prefix: String, bucketName: String): IndexResult {
+    // Get all files from S3 with the given prefix
+    val allFiles = fileStorage.listFiles(s3Prefix)
+    println("Found ${allFiles.size} files in S3 bucket $bucketName with prefix: $s3Prefix")
+    
+    if (allFiles.isEmpty()) {
+        return IndexResult(
+            success = true,
+            message = "No files found in S3 bucket with prefix: $s3Prefix",
+            totalDirectories = 0,
+            totalFiles = 0,
+            uniqueFiles = 0
+        )
+    }
+    
+    // Group files by "directory" (common prefix before last slash)
+    val directoriesMap = allFiles
+        .filter { !it.endsWith("/") } // Skip directory markers
+        .groupBy { file ->
+            // Extract directory name from S3 key
+            val pathParts = file.removePrefix(s3Prefix).split("/")
+            if (pathParts.size > 1) pathParts[0] else "root"
+        }
+    
+    if (directoriesMap.isEmpty()) {
+        return IndexResult(
+            success = true,
+            message = "No valid directories found in S3 files",
+            totalDirectories = 0,
+            totalFiles = 0,
+            uniqueFiles = 0
+        )
+    }
+    
+    // Initialize services
+    val cas = ContentAddressableStorage.create()
+    val lms = LernmaterialService()
+    lms.initialize()
+    val mcardService = MCardService()
+    
+    // Load stopwords
+    val stopwords = try {
+        Files.readAllLines(Paths.get("stopwords/deutsche_stopwords_nltk.txt")).toSet()
+    } catch (e: Exception) {
+        println("Warning: Could not load stopwords file: ${e.message}")
+        emptySet()
+    }
+    
+    // Create main packet
+    val logoImage = mcardService.getImagebyID(1)
+    val packet = Packet(
+        0,
+        "S3 Materials: $bucketName",
+        "Materials indexed from S3 bucket: $bucketName",
+        logoImage
+    )
+    packet.id = lms.addPacket(packet)
+    
+    // Format for file sizes
+    val sizeFormatter = DecimalFormat("#,###")
+    val processedHashes = mutableMapOf<String, String>()
+    var totalFiles = 0
+    var uniqueFiles = 0
+    
+    println("Processing ${directoriesMap.size} directories from S3 bucket $bucketName...")
+    
+    // Process each directory
+    directoriesMap.forEach { (directoryName, files) ->
+        println("Processing S3 directory: $directoryName (${files.size} files)")
+        
+        val materialien: MutableList<Material> = mutableListOf()
+        
+        files.forEach { s3Key ->
+            try {
+                val fileName = s3Key.substringAfterLast("/")
+                val fileExtension = fileName.substringAfterLast('.', "bin")
+                
+                // Get file size from S3
+                val fileSize = fileStorage.getFileSize(s3Key) ?: 0L
+                val formattedSize = sizeFormatter.format(fileSize)
+                
+                // Download file to temporary location for processing
+                val tempFile = downloadS3FileToTemp(fileStorage, s3Key)
+                
+                if (tempFile != null) {
+                    try {
+                        // Store in CAS
+                        val storageResult = cas.store(tempFile)
+                        val contentId = storageResult.hash
+                        
+                        // Track unique files
+                        if (!processedHashes.containsKey(contentId)) {
+                            processedHashes[contentId] = contentId
+                            uniqueFiles++
+                        }
+                        
+                        // Extract text content
+                        val content = extractTextFromPdf(tempFile.absolutePath)
+                        val cleanContent = removeStopwords(content, stopwords)
+                        
+                        // Add to materials
+                        materialien.add(
+                            Material(
+                                0,
+                                fileName,
+                                fileExtension,
+                                fileSize,
+                                contentId,
+                                cleanContent
+                            )
+                        )
+                        
+                        totalFiles++
+                        println("Processed S3 file: $fileName ($formattedSize bytes)")
+                        
+                    } finally {
+                        // Clean up temp file
+                        tempFile.delete()
+                    }
+                } else {
+                    println("Warning: Could not download S3 file: $s3Key")
+                }
+                
+            } catch (e: Exception) {
+                println("Error processing S3 file $s3Key: ${e.message}")
+            }
+        }
+        
+        // Create and save Unterlage
+        if (materialien.isNotEmpty()) {
+            val unterlage = Unterlage(0, packet, directoryName, materialien)
+            unterlage.id = lms.addUnterlage(unterlage)
+            println("Saved S3 directory to database: $directoryName with ${materialien.size} materials")
+        }
+    }
+    
+    return IndexResult(
+        success = true,
+        message = "S3 indexing completed successfully from bucket: $bucketName",
+        totalDirectories = directoriesMap.size,
+        totalFiles = totalFiles,
+        uniqueFiles = uniqueFiles
+    )
 }
 
 fun index(dir: String) {

@@ -23,7 +23,13 @@ postgres:
 
 fileStorage:
   type: local
-  localBasePath: "content-store"
+  local:
+    basePath: "/opt/learningcards/content-store"
+    subdirectories:
+      images: "images"
+      documents: "documents"
+      thumbnails: "thumbnails"
+
   s3:
     bucketName: m3-cas1
     region: eu-central-1
@@ -42,3 +48,13 @@ smtp:
   fromName: "Learning Cards"
   enableTLS: true
   enableAuth: true
+
+
+logging:
+  level: INFO
+  appenders:
+    - name: STDOUT
+      pattern: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    - name: FILE
+      pattern: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+      fileName: "/opt/learningcards/logs/application.log"

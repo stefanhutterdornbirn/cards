@@ -38,8 +38,14 @@ class ThumbnailService {
         val thumbnailBytes = ByteArrayInputStream(outputStream.toByteArray())
         
         // Store in CAS and return hash
-        val result = cas.store(thumbnailBytes)
-        return result.hash
+        return try {
+            val result = cas.store(thumbnailBytes)
+            result.hash
+        } catch (e: Exception) {
+            println("ERROR: CAS storage failed for thumbnail: ${e.message}")
+            e.printStackTrace()
+            throw RuntimeException("Failed to store thumbnail in CAS: ${e.message}", e)
+        }
     }
     
     fun getThumbnailStream(hash: String): InputStream? {
@@ -125,8 +131,14 @@ class ResizeService {
         val resizedBytes = ByteArrayInputStream(outputStream.toByteArray())
         
         // Store in CAS and return hash
-        val result = cas.store(resizedBytes)
-        return result.hash
+        return try {
+            val result = cas.store(resizedBytes)
+            result.hash
+        } catch (e: Exception) {
+            println("ERROR: CAS storage failed for resized image: ${e.message}")
+            e.printStackTrace()
+            throw RuntimeException("Failed to store resized image in CAS: ${e.message}", e)
+        }
     }
     
     fun getResizedStream(hash: String): InputStream? {

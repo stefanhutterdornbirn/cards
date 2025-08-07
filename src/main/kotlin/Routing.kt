@@ -202,25 +202,74 @@ fun Application.configureRouting() {
                 val inputStream = call.receiveStream()
 
                 // Store original file in CAS
-                val originalResult = cas.store(inputStream)
+                val originalResult = try {
+                    cas.store(inputStream)
+                } catch (e: Exception) {
+                    application.environment.log.error("CAS storage failed for image upload: ${e.message}", e)
+                    call.respond(
+                        HttpStatusCode.InternalServerError,
+                        mapOf("error" to "Fehler beim Speichern der Datei: ${e.message}")
+                    )
+                    return@post
+                }
 
                 // Create thumbnail and store in CAS
                 val thumbnailService = ThumbnailService()
-                val originalStream = cas.retrieveAsStream(originalResult.hash)!!
-                val thumbnailHash = thumbnailService.createThumbnail(
-                    originalStream,
-                    filename,
-                    fileExtension
-                )
+                val originalStream = try {
+                    cas.retrieveAsStream(originalResult.hash)
+                        ?: throw IllegalStateException("Stored file not found: ${originalResult.hash}")
+                } catch (e: Exception) {
+                    application.environment.log.error("CAS retrieval failed for thumbnail creation: ${e.message}", e)
+                    call.respond(
+                        HttpStatusCode.InternalServerError,
+                        mapOf("error" to "Fehler beim Abrufen der gespeicherten Datei: ${e.message}")
+                    )
+                    return@post
+                }
+                
+                val thumbnailHash = try {
+                    thumbnailService.createThumbnail(
+                        originalStream,
+                        filename,
+                        fileExtension
+                    )
+                } catch (e: Exception) {
+                    application.environment.log.error("Thumbnail creation failed: ${e.message}", e)
+                    call.respond(
+                        HttpStatusCode.InternalServerError,
+                        mapOf("error" to "Fehler beim Erstellen des Thumbnails: ${e.message}")
+                    )
+                    return@post
+                }
 
                 // Create resized version and store in CAS
                 val resizeService = ResizeService()
-                val originalStreamForResize = cas.retrieveAsStream(originalResult.hash)!!
-                val resizedHash = resizeService.createResized(
-                    originalStreamForResize,
-                    filename,
-                    fileExtension
-                )
+                val originalStreamForResize = try {
+                    cas.retrieveAsStream(originalResult.hash)
+                        ?: throw IllegalStateException("Stored file not found: ${originalResult.hash}")
+                } catch (e: Exception) {
+                    application.environment.log.error("CAS retrieval failed for resizing: ${e.message}", e)
+                    call.respond(
+                        HttpStatusCode.InternalServerError,
+                        mapOf("error" to "Fehler beim Abrufen der gespeicherten Datei für Größenänderung: ${e.message}")
+                    )
+                    return@post
+                }
+                
+                val resizedHash = try {
+                    resizeService.createResized(
+                        originalStreamForResize,
+                        filename,
+                        fileExtension
+                    )
+                } catch (e: Exception) {
+                    application.environment.log.error("Resizing failed: ${e.message}", e)
+                    call.respond(
+                        HttpStatusCode.InternalServerError,
+                        mapOf("error" to "Fehler beim Erstellen der verkleinerten Version: ${e.message}")
+                    )
+                    return@post
+                }
 
                 call.respond(
                     HttpStatusCode.Created, mapOf(
@@ -242,25 +291,73 @@ fun Application.configureRouting() {
                 val inputStream = call.receiveStream()
 
                 // Store original file in CAS
-                val originalResult = cas.store(inputStream)
+                val originalResult = try {
+                    cas.store(inputStream)
+                } catch (e: Exception) {
+                    application.environment.log.error("CAS storage failed for image upload: ${e.message}", e)
+                    call.respond(
+                        HttpStatusCode.InternalServerError,
+                        mapOf("error" to "Fehler beim Speichern der Datei: ${e.message}")
+                    )
+                    return@post
+                }
 
                 // Create thumbnail and store in CAS
                 val thumbnailService = ThumbnailService()
-                val originalStream = cas.retrieveAsStream(originalResult.hash)!!
-                val thumbnailHash = thumbnailService.createThumbnail(
-                    originalStream,
-                    filename,
-                    fileExtension
-                )
+                val originalStream = try {
+                    cas.retrieveAsStream(originalResult.hash)
+                        ?: throw IllegalStateException("Stored file not found: ${originalResult.hash}")
+                } catch (e: Exception) {
+                    application.environment.log.error("CAS retrieval failed for thumbnail creation: ${e.message}", e)
+                    call.respond(
+                        HttpStatusCode.InternalServerError,
+                        mapOf("error" to "Fehler beim Abrufen der gespeicherten Datei: ${e.message}")
+                    )
+                    return@post
+                }
+                
+                val thumbnailHash = try {
+                    thumbnailService.createThumbnail(
+                        originalStream,
+                        filename,
+                        fileExtension
+                    )
+                } catch (e: Exception) {
+                    application.environment.log.error("Thumbnail creation failed: ${e.message}", e)
+                    call.respond(
+                        HttpStatusCode.InternalServerError,
+                        mapOf("error" to "Fehler beim Erstellen des Thumbnails: ${e.message}")
+                    )
+                    return@post
+                }
 
                 // Create resized version and store in CAS
                 val resizeService = ResizeService()
-                val originalStreamForResize = cas.retrieveAsStream(originalResult.hash)!!
-                val resizedHash = resizeService.createResized(
-                    originalStreamForResize,
-                    filename,
-                    fileExtension
-                )
+                val originalStreamForResize = try {
+                    cas.retrieveAsStream(originalResult.hash)
+                        ?: throw IllegalStateException("Stored file not found: ${originalResult.hash}")
+                } catch (e: Exception) {
+                    application.environment.log.error("CAS retrieval failed for resizing: ${e.message}", e)
+                    call.respond(
+                        HttpStatusCode.InternalServerError,
+                        mapOf("error" to "Fehler beim Abrufen der gespeicherten Datei für Größenänderung: ${e.message}")
+                    )
+                    return@post
+                }
+                val resizedHash = try {
+                    resizeService.createResized(
+                        originalStreamForResize,
+                        filename,
+                        fileExtension
+                    )
+                } catch (e: Exception) {
+                    application.environment.log.error("Resizing failed: ${e.message}", e)
+                    call.respond(
+                        HttpStatusCode.InternalServerError,
+                        mapOf("error" to "Fehler beim Erstellen der verkleinerten Version: ${e.message}")
+                    )
+                    return@post
+                }
 
                 // Create database entry with all hashes
                 val image = Image(
@@ -374,6 +471,44 @@ fun Application.configureRouting() {
 
             get("/index") {
                 startIndexer()
+            }
+
+            // S3 Indexing endpoint - POST with bucket name parameter
+            post("/index/s3") {
+                try {
+                    val request = call.receive<Map<String, String>>()
+                    val bucketName = request["bucketName"]
+                    val s3Prefix = request["prefix"] ?: "learning-materials/"
+                    
+                    if (bucketName.isNullOrBlank()) {
+                        call.respond(HttpStatusCode.BadRequest, mapOf(
+                            "error" to "bucketName is required"
+                        ))
+                        return@post
+                    }
+                    
+                    println("Starting S3 indexing for bucket: $bucketName with prefix: $s3Prefix")
+                    
+                    // Call the S3 indexing function
+                    val result = indexFromS3Bucket(bucketName, s3Prefix)
+                    
+                    call.respond(HttpStatusCode.OK, mapOf(
+                        "success" to result.success,
+                        "message" to result.message,
+                        "bucketName" to bucketName,
+                        "prefix" to s3Prefix,
+                        "totalDirectories" to result.totalDirectories,
+                        "totalFiles" to result.totalFiles,
+                        "uniqueFiles" to result.uniqueFiles
+                    ))
+                    
+                } catch (e: Exception) {
+                    println("S3 indexing API error: ${e.message}")
+                    call.respond(HttpStatusCode.InternalServerError, mapOf(
+                        "error" to "S3 indexing failed",
+                        "message" to e.message
+                    ))
+                }
             }
 
             get("/storage/statistics") {
@@ -1092,7 +1227,16 @@ fun Application.configureRouting() {
                     val fileSize = call.request.headers["X-File-Size"]?.toLongOrNull() ?: 0L
 
                     // Store file in CAS
-                    val result = cas.store(inputStream)
+                    val result = try {
+                        cas.store(inputStream)
+                    } catch (e: Exception) {
+                        application.environment.log.error("CAS storage failed for document upload: ${e.message}", e)
+                        call.respond(
+                            HttpStatusCode.InternalServerError,
+                            mapOf("error" to "Fehler beim Speichern der Datei: ${e.message}")
+                        )
+                        return@post
+                    }
 
                     // Erstelle Dokument-Eintrag in der Datenbank
                     val dokument = Dokument(

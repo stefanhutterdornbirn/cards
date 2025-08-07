@@ -768,7 +768,17 @@ fun Application.configureDMSRouting() {
                         val fileName = call.request.headers["X-File-Name"] ?: "document_${System.currentTimeMillis()}"
                         val fileType = call.request.headers["X-File-Type"] ?: "application/octet-stream"
                         
-                        val result = cas.store(inputStream)
+                        val result = try {
+                            cas.store(inputStream)
+                        } catch (e: Exception) {
+                            println("ERROR: CAS storage failed for DMS upload: ${e.message}")
+                            e.printStackTrace()
+                            call.respond(
+                                HttpStatusCode.InternalServerError,
+                                mapOf("error" to "Fehler beim Speichern der Datei: ${e.message}")
+                            )
+                            return@post
+                        }
                         
                         // Charge for upload and record metrics
                         try {
@@ -1430,7 +1440,17 @@ fun Application.configureDMSRouting() {
                     val fileName = call.request.headers["X-File-Name"] ?: "anonymous_upload_${System.currentTimeMillis()}"
                     val fileType = call.request.headers["X-File-Type"] ?: "application/octet-stream"
                     
-                    val result = cas.store(inputStream)
+                    val result = try {
+                        cas.store(inputStream)
+                    } catch (e: Exception) {
+                        println("ERROR: CAS storage failed for anonymous DMS upload: ${e.message}")
+                        e.printStackTrace()
+                        call.respond(
+                            HttpStatusCode.InternalServerError,
+                            mapOf("error" to "Fehler beim Speichern der Datei: ${e.message}")
+                        )
+                        return@post
+                    }
                     
                     val responseMap = mutableMapOf<String, Any>(
                         "hash" to result.hash,
