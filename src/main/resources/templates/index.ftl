@@ -17,6 +17,7 @@
         <script type="module"  src="/static/js/NewCardScript.js" defer></script>
         <script type="module"  src="/static/menu.js" defer></script>
         <script src="/static/mobile-nav.js" defer></script>
+        <script src="/static/sticky-nav.js" defer></script>
         <script type="module"  src="/static/js/ManageCardsScript.js" defer></script>
         <script type="module"  src="/static/js/ExamManagementScript.js" defer></script>
         <script type="module"  src="/static/js/Material.js" defer></script>
@@ -41,6 +42,19 @@
                 padding: 0;
                 position: relative;
                 z-index: 100;
+                transition: all 0.3s ease;
+            }
+            
+            /* Sticky navigation when scrolled */
+            .horizontal-nav.sticky {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                backdrop-filter: blur(10px);
+                background: rgba(255, 255, 255, 0.95);
             }
             
             .nav-container {
@@ -163,6 +177,17 @@
                     padding: 0.5rem 2rem;
                     border-bottom: 1px solid #e9ecef;
                 }
+            }
+            
+            /* Spacer for sticky navigation */
+            .nav-spacer {
+                width: 100%;
+                display: block;
+            }
+            
+            /* Content adjustment when nav is sticky */
+            .horizontal-nav.sticky + .main-layout {
+                margin-top: 0;
             }
         </style>
 
