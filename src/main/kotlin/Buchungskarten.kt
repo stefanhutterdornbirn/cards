@@ -324,6 +324,8 @@ class BuchungsKartenService {
             "STROM" to "Strom",
             "TELEFON" to "Telefon",
             "VERSICHERUNG" to "Versicherung",
+            "SOFTWARE_LIZENZ_GEBUEHR" to "Software Lizenz/Gebühr",
+            "SERVER_SOFTWARE_HOSTING" to "Server/Software Hosting",
             "SONSTIGE_AUSGABEN" to "Sonstige Ausgaben"
         )
         
@@ -374,6 +376,8 @@ class BuchungsKartenService {
                 "STROM" to "Strom",
                 "TELEFON" to "Telefon",
                 "VERSICHERUNG" to "Versicherung",
+                "SOFTWARE_LIZENZ_GEBUEHR" to "Software Lizenz/Gebühr",
+                "SERVER_SOFTWARE_HOSTING" to "Server/Software Hosting",
                 "SONSTIGE_AUSGABEN" to "Sonstige Ausgaben"
             )
             

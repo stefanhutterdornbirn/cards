@@ -226,6 +226,8 @@ export const buchungskartenTranslations = {
             STROM: 'Strom',
             TELEFON: 'Telefon',
             VERSICHERUNG: 'Versicherung',
+            SOFTWARE_LIZENZ_GEBUEHR: 'Software Lizenz/Gebühr',
+            SERVER_SOFTWARE_HOSTING: 'Server/Software Hosting',
             SONSTIGE_AUSGABEN: 'Sonstige Ausgaben'
         }
     },
@@ -453,6 +455,8 @@ export const buchungskartenTranslations = {
             STROM: 'Electricity',
             TELEFON: 'Phone',
             VERSICHERUNG: 'Insurance',
+            SOFTWARE_LIZENZ_GEBUEHR: 'Software License/Fee',
+            SERVER_SOFTWARE_HOSTING: 'Server/Software Hosting',
             SONSTIGE_AUSGABEN: 'Other Expenses'
         }
     },
@@ -680,6 +684,8 @@ export const buchungskartenTranslations = {
             STROM: 'Électricité',
             TELEFON: 'Téléphone',
             VERSICHERUNG: 'Assurance',
+            SOFTWARE_LIZENZ_GEBUEHR: 'Licence/Frais Logiciel',
+            SERVER_SOFTWARE_HOSTING: 'Hébergement Serveur/Logiciel',
             SONSTIGE_AUSGABEN: 'Autres Dépenses'
         }
     },
@@ -907,6 +913,8 @@ export const buchungskartenTranslations = {
             STROM: 'Elektriciteit',
             TELEFON: 'Telefoon',
             VERSICHERUNG: 'Verzekering',
+            SOFTWARE_LIZENZ_GEBUEHR: 'Software Licentie/Kosten',
+            SERVER_SOFTWARE_HOSTING: 'Server/Software Hosting',
             SONSTIGE_AUSGABEN: 'Overige Uitgaven'
         }
     }

@@ -900,9 +900,37 @@ function showBuchungskartenUebersicht(): void {
         i18n.t('buchungskarten.tableHeaders.actions')
     ];
 
-    headers.forEach(headerText => {
+    // Sortierungsstate für jede Spalte (asc, desc, none)
+    let sortState: {[key: number]: 'asc' | 'desc' | 'none'} = {};
+    let buchungskartenData: any[] = [];
+
+    headers.forEach((headerText, index) => {
         const th = document.createElement('th');
-        th.textContent = headerText;
+        
+        // Sortierungsstate initialisieren
+        sortState[index] = 'none';
+        
+        // Container für Header Text und Sort Indicator
+        const headerContainer = document.createElement('div');
+        headerContainer.style.display = 'flex';
+        headerContainer.style.alignItems = 'center';
+        headerContainer.style.justifyContent = 'space-between';
+        
+        const headerTextElement = document.createElement('span');
+        headerTextElement.textContent = headerText;
+        
+        const sortIndicator = document.createElement('span');
+        sortIndicator.innerHTML = '⇅';
+        sortIndicator.style.marginLeft = '8px';
+        sortIndicator.style.fontSize = '12px';
+        sortIndicator.style.opacity = '0.6';
+        
+        headerContainer.appendChild(headerTextElement);
+        if (index < headers.length - 1) { // Keine Sortierung für die Aktionen-Spalte
+            headerContainer.appendChild(sortIndicator);
+        }
+        
+        th.appendChild(headerContainer);
         th.style.padding = '16px 12px';
         th.style.textAlign = 'left';
         th.style.fontWeight = 'bold';
@@ -913,6 +941,57 @@ function showBuchungskartenUebersicht(): void {
         th.style.textTransform = 'uppercase';
         th.style.textShadow = '0 1px 3px rgba(0, 0, 0, 0.5)';
         th.style.fontFamily = 'Arial, sans-serif';
+        
+        // Cursor nur für sortierbare Spalten
+        if (index < headers.length - 1) {
+            th.style.cursor = 'pointer';
+            th.style.userSelect = 'none';
+            
+            // Sortierung Event Listener
+            th.addEventListener('click', () => {
+                // Sortierungsstate aktualisieren
+                let newState: 'asc' | 'desc' | 'none';
+                if (sortState[index] === 'none') {
+                    newState = 'asc';
+                } else if (sortState[index] === 'asc') {
+                    newState = 'desc';
+                } else {
+                    newState = 'none';
+                }
+                
+                // Alle anderen Spalten auf 'none' zurücksetzen
+                Object.keys(sortState).forEach(key => {
+                    const keyNum = parseInt(key);
+                    if (keyNum !== index) {
+                        sortState[keyNum] = 'none';
+                        const otherTh = headerRow.children[keyNum] as HTMLElement;
+                        const otherIndicator = otherTh.querySelector('span:last-child') as HTMLElement;
+                        if (otherIndicator && keyNum < headers.length - 1) {
+                            otherIndicator.innerHTML = '⇅';
+                            otherIndicator.style.opacity = '0.6';
+                        }
+                    }
+                });
+                
+                sortState[index] = newState;
+                
+                // Sort Indicator aktualisieren
+                if (newState === 'asc') {
+                    sortIndicator.innerHTML = '↑';
+                    sortIndicator.style.opacity = '1';
+                } else if (newState === 'desc') {
+                    sortIndicator.innerHTML = '↓';
+                    sortIndicator.style.opacity = '1';
+                } else {
+                    sortIndicator.innerHTML = '⇅';
+                    sortIndicator.style.opacity = '0.6';
+                }
+                
+                // Daten sortieren und Tabelle neu rendern
+                sortAndRenderTable(tbody, buchungskartenData, index, newState, headers.length);
+            });
+        }
+        
         headerRow.appendChild(th);
     });
 
@@ -939,10 +1018,10 @@ function showBuchungskartenUebersicht(): void {
     tbody.appendChild(loadingRow);
 
     // Daten laden
-    loadBuchungskartenData(tbody, headers.length);
+    loadBuchungskartenData(tbody, headers.length, buchungskartenData);
 }
 
-function loadBuchungskartenData(tbody: HTMLElement, headerCount: number): void {
+function loadBuchungskartenData(tbody: HTMLElement, headerCount: number, buchungskartenData: any[]): void {
     const authToken = localStorage.getItem('authToken');
 
     if (!authToken) {
@@ -973,256 +1052,12 @@ function loadBuchungskartenData(tbody: HTMLElement, headerCount: number): void {
         return response.json();
     })
     .then((buchungskarten: any[]) => {
-        // Loading-Zeile entfernen
-        tbody.innerHTML = '';
-
-        if (buchungskarten.length === 0) {
-            const noDataRow = document.createElement('tr');
-            const noDataCell = document.createElement('td');
-            noDataCell.colSpan = headerCount;
-            noDataCell.textContent = i18n.t('buchungskarten.noBookings');
-            noDataCell.style.padding = '20px';
-            noDataCell.style.textAlign = 'center';
-            noDataCell.style.fontStyle = 'italic';
-            noDataCell.style.color = '#6c757d';
-            noDataRow.appendChild(noDataCell);
-            tbody.appendChild(noDataRow);
-            return;
-        }
-
-        // Datenzeilen erstellen
-        buchungskarten.forEach((buchungskarte: any, index: number) => {
-            const row = document.createElement('tr');
-            
-            // Zebra-Streifenmuster mit Farben
-            if (index % 2 === 0) {
-                row.style.background = 'linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%)';
-            } else {
-                row.style.background = 'linear-gradient(135deg, #ffffff 0%, #f5f7fa 100%)';
-            }
-            
-            row.style.borderBottom = '1px solid #e3f2fd';
-            row.style.transition = 'all 0.3s ease';
-            
-            // Hover-Effekt mit Farbe
-            row.addEventListener('mouseenter', () => {
-                row.style.background = 'linear-gradient(135deg, #e1f5fe 0%, #b3e5fc 100%)';
-                row.style.transform = 'translateY(-1px)';
-                row.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
-            });
-            
-            row.addEventListener('mouseleave', () => {
-                if (index % 2 === 0) {
-                    row.style.background = 'linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%)';
-                } else {
-                    row.style.background = 'linear-gradient(135deg, #ffffff 0%, #f5f7fa 100%)';
-                }
-                row.style.transform = 'translateY(0)';
-                row.style.boxShadow = 'none';
-            });
-
-            // Zellen erstellen
-            const cells = [
-                buchungskarte.id.toString(),
-                buchungskarte.datum,
-                i18n.t(`buchungskarten.buchungsArt.${buchungskarte.buchungsart.name}`),
-                i18n.t(`buchungskarten.buchungsKategorie.${buchungskarte.kategorie.name}`),
-                buchungskarte.beschreibung,
-                buchungskarte.betrag.toFixed(2),
-                buchungskarte.belegnummer || '-',
-                buchungskarte.ustSatz ? buchungskarte.ustSatz.toFixed(2) : '-',
-                buchungskarte.ustBetrag ? buchungskarte.ustBetrag.toFixed(2) : '-',
-                buchungskarte.dokument.originalName,
-                buchungskarte.image ? buchungskarte.image.name : '-',
-                new Date(buchungskarte.erstellt).toLocaleDateString('de-DE'),
-                '' // Placeholder für Delete-Button
-            ];
-
-            cells.forEach((cellText, cellIndex) => {
-                const td = document.createElement('td');
-                
-                // Spezialbehandlung für die Aktionen-Spalte
-                if (cellIndex === 12) { // Aktionen-Spalte
-                    // Edit Button
-                    const editButton = document.createElement('button');
-                    editButton.innerHTML = '✏️';
-                    editButton.title = i18n.t('buchungskarten.editBooking');
-                    editButton.style.background = 'linear-gradient(135deg, #0891b2 0%, #0e7490 100%)';
-                    editButton.style.color = 'white';
-                    editButton.style.border = 'none';
-                    editButton.style.borderRadius = '6px';
-                    editButton.style.padding = '6px 10px';
-                    editButton.style.cursor = 'pointer';
-                    editButton.style.fontSize = '14px';
-                    editButton.style.transition = 'all 0.3s ease';
-                    editButton.style.boxShadow = '0 2px 4px rgba(8, 145, 178, 0.3)';
-                    editButton.style.marginRight = '5px';
-                    
-                    editButton.addEventListener('mouseenter', () => {
-                        editButton.style.transform = 'scale(1.1)';
-                        editButton.style.boxShadow = '0 4px 8px rgba(8, 145, 178, 0.4)';
-                    });
-                    
-                    editButton.addEventListener('mouseleave', () => {
-                        editButton.style.transform = 'scale(1)';
-                        editButton.style.boxShadow = '0 2px 4px rgba(8, 145, 178, 0.3)';
-                    });
-                    
-                    editButton.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        openEditBuchungsKarteOverlay(buchungskarte);
-                    });
-                    
-                    // Delete Button
-                    const deleteButton = document.createElement('button');
-                    deleteButton.innerHTML = '🗑️';
-                    deleteButton.title = i18n.t('buchungskarten.deleteBooking');
-                    deleteButton.style.background = 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)';
-                    deleteButton.style.color = 'white';
-                    deleteButton.style.border = 'none';
-                    deleteButton.style.borderRadius = '6px';
-                    deleteButton.style.padding = '6px 10px';
-                    deleteButton.style.cursor = 'pointer';
-                    deleteButton.style.fontSize = '14px';
-                    deleteButton.style.transition = 'all 0.3s ease';
-                    deleteButton.style.boxShadow = '0 2px 4px rgba(220, 53, 69, 0.3)';
-                    
-                    deleteButton.addEventListener('mouseenter', () => {
-                        deleteButton.style.transform = 'scale(1.1)';
-                        deleteButton.style.boxShadow = '0 4px 8px rgba(220, 53, 69, 0.4)';
-                    });
-                    
-                    deleteButton.addEventListener('mouseleave', () => {
-                        deleteButton.style.transform = 'scale(1)';
-                        deleteButton.style.boxShadow = '0 2px 4px rgba(220, 53, 69, 0.3)';
-                    });
-                    
-                    deleteButton.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        deleteBuchungsKarte(buchungskarte.id, row);
-                    });
-                    
-                    td.appendChild(editButton);
-                    td.appendChild(deleteButton);
-                    td.style.textAlign = 'center';
-                    td.style.padding = '8px';
-                } else {
-                    td.textContent = cellText;
-                }
-                td.style.padding = '12px 10px';
-                td.style.borderRight = '1px solid #e3f2fd';
-                td.style.maxWidth = '200px';
-                td.style.overflow = 'hidden';
-                td.style.textOverflow = 'ellipsis';
-                td.style.whiteSpace = 'nowrap';
-                
-                // Farbcodierung basierend auf Zellentyp
-                switch (cellIndex) {
-                    case 0: // ID
-                        td.style.fontWeight = 'bold';
-                        td.style.color = '#6366f1';
-                        td.style.backgroundColor = 'rgba(99, 102, 241, 0.1)';
-                        break;
-                    case 1: // Datum
-                        td.style.color = '#059669';
-                        td.style.fontWeight = '500';
-                        break;
-                    case 2: // Buchungsart
-                        if (buchungskarte.buchungsart.name === 'EINNAHME') {
-                            td.style.color = '#16a34a';
-                            td.style.backgroundColor = 'rgba(22, 163, 74, 0.1)';
-                            td.style.fontWeight = 'bold';
-                        } else {
-                            td.style.color = '#dc2626';
-                            td.style.backgroundColor = 'rgba(220, 38, 38, 0.1)';
-                            td.style.fontWeight = 'bold';
-                        }
-                        break;
-                    case 3: // Kategorie
-                        td.style.color = '#7c3aed';
-                        td.style.fontWeight = '500';
-                        break;
-                    case 4: // Beschreibung
-                        td.style.color = '#374151';
-                        break;
-                    case 5: // Betrag
-                        td.style.fontWeight = 'bold';
-                        td.style.textAlign = 'right';
-                        if (buchungskarte.buchungsart.name === 'EINNAHME') {
-                            td.style.color = '#16a34a';
-                        } else {
-                            td.style.color = '#dc2626';
-                        }
-                        break;
-                    case 6: // Belegnummer
-                        td.style.color = '#6b7280';
-                        td.style.fontFamily = 'monospace';
-                        break;
-                    case 7: // USt-Satz
-                        td.style.color = '#7c3aed';
-                        td.style.fontWeight = '500';
-                        td.style.textAlign = 'right';
-                        if (cellText !== '-') {
-                            td.textContent = cellText + '%';
-                        }
-                        break;
-                    case 8: // USt-Betrag
-                        td.style.color = '#7c3aed';
-                        td.style.fontWeight = '500';
-                        td.style.textAlign = 'right';
-                        if (cellText !== '-') {
-                            td.textContent = '€' + cellText;
-                        }
-                        break;
-                    case 9: // Dokument
-                        td.style.color = '#0891b2';
-                        td.style.fontWeight = '500';
-                        td.style.cursor = 'pointer';
-                        td.style.textDecoration = 'underline';
-                        td.title = 'Klicken zum Anzeigen/Herunterladen';
-                        
-                        // Click-Handler für Dokument
-                        td.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            handleDokumentClick(buchungskarte.dokument);
-                        });
-                        
-                        // Hover-Effekt für Dokument
-                        td.addEventListener('mouseenter', () => {
-                            td.style.backgroundColor = 'rgba(8, 145, 178, 0.1)';
-                            td.style.transform = 'scale(1.05)';
-                        });
-                        
-                        td.addEventListener('mouseleave', () => {
-                            td.style.backgroundColor = 'transparent';
-                            td.style.transform = 'scale(1)';
-                        });
-                        break;
-                    case 10: // Bild
-                        td.style.color = '#9333ea';
-                        if (cellText !== '-') {
-                            td.style.fontWeight = '500';
-                        }
-                        break;
-                    case 11: // Erstellt
-                        td.style.color = '#6b7280';
-                        td.style.fontSize = '12px';
-                        break;
-                    case 12: // Aktionen
-                        // Styling wird bereits in der Spezialbehandlung oben gesetzt
-                        break;
-                }
-                
-                // Tooltip für längere Texte
-                if (cellText.length > 30) {
-                    td.title = cellText;
-                }
-                
-                row.appendChild(td);
-            });
-
-            tbody.appendChild(row);
-        });
+        // Daten in Array speichern für Sortierung
+        buchungskartenData.length = 0; // Array leeren
+        buchungskartenData.push(...buchungskarten);
+        
+        // Tabelle rendern
+        renderBuchungskartenTable(tbody, buchungskartenData, headerCount);
     })
     .catch(error => {
         console.error('Fehler beim Laden der Buchungskarten:', error);
@@ -1238,6 +1073,350 @@ function loadBuchungskartenData(tbody: HTMLElement, headerCount: number): void {
         errorRow.appendChild(errorCell);
         tbody.appendChild(errorRow);
     });
+}
+
+function renderBuchungskartenTable(tbody: HTMLElement, buchungskartenData: any[], headerCount: number): void {
+    // Loading-Zeile entfernen
+    tbody.innerHTML = '';
+
+    if (buchungskartenData.length === 0) {
+        const noDataRow = document.createElement('tr');
+        const noDataCell = document.createElement('td');
+        noDataCell.colSpan = headerCount;
+        noDataCell.textContent = i18n.t('buchungskarten.noBookings');
+        noDataCell.style.padding = '20px';
+        noDataCell.style.textAlign = 'center';
+        noDataCell.style.fontStyle = 'italic';
+        noDataCell.style.color = '#6c757d';
+        noDataRow.appendChild(noDataCell);
+        tbody.appendChild(noDataRow);
+        return;
+    }
+
+    // Datenzeilen erstellen
+    buchungskartenData.forEach((buchungskarte: any, index: number) => {
+        const row = document.createElement('tr');
+        
+        // Zebra-Streifenmuster mit Farben
+        if (index % 2 === 0) {
+            row.style.background = 'linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%)';
+        } else {
+            row.style.background = 'linear-gradient(135deg, #ffffff 0%, #f5f7fa 100%)';
+        }
+        
+        row.style.borderBottom = '1px solid #e3f2fd';
+        row.style.transition = 'all 0.3s ease';
+        
+        // Hover-Effekt mit Farbe
+        row.addEventListener('mouseenter', () => {
+            row.style.background = 'linear-gradient(135deg, #e1f5fe 0%, #b3e5fc 100%)';
+            row.style.transform = 'translateY(-1px)';
+            row.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+        });
+        
+        row.addEventListener('mouseleave', () => {
+            if (index % 2 === 0) {
+                row.style.background = 'linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%)';
+            } else {
+                row.style.background = 'linear-gradient(135deg, #ffffff 0%, #f5f7fa 100%)';
+            }
+            row.style.transform = 'translateY(0)';
+            row.style.boxShadow = 'none';
+        });
+
+        // Zellen erstellen
+        const cells = [
+            buchungskarte.id.toString(),
+            buchungskarte.datum,
+            i18n.t(`buchungskarten.buchungsArt.${buchungskarte.buchungsart.name}`),
+            i18n.t(`buchungskarten.buchungsKategorie.${buchungskarte.kategorie.name}`),
+            buchungskarte.beschreibung,
+            buchungskarte.betrag.toFixed(2),
+            buchungskarte.belegnummer || '-',
+            buchungskarte.ustSatz ? buchungskarte.ustSatz.toFixed(2) : '-',
+            buchungskarte.ustBetrag ? buchungskarte.ustBetrag.toFixed(2) : '-',
+            buchungskarte.dokument.originalName,
+            buchungskarte.image ? buchungskarte.image.name : '-',
+            new Date(buchungskarte.erstellt).toLocaleDateString('de-DE'),
+            '' // Placeholder für Delete-Button
+        ];
+
+        cells.forEach((cellText, cellIndex) => {
+            const td = document.createElement('td');
+            
+            // Spezialbehandlung für die Aktionen-Spalte
+            if (cellIndex === 12) { // Aktionen-Spalte
+                // Edit Button
+                const editButton = document.createElement('button');
+                editButton.innerHTML = '✏️';
+                editButton.title = i18n.t('buchungskarten.editBooking');
+                editButton.style.background = 'linear-gradient(135deg, #0891b2 0%, #0e7490 100%)';
+                editButton.style.color = 'white';
+                editButton.style.border = 'none';
+                editButton.style.borderRadius = '6px';
+                editButton.style.padding = '6px 10px';
+                editButton.style.cursor = 'pointer';
+                editButton.style.fontSize = '14px';
+                editButton.style.transition = 'all 0.3s ease';
+                editButton.style.boxShadow = '0 2px 4px rgba(8, 145, 178, 0.3)';
+                editButton.style.marginRight = '5px';
+                
+                editButton.addEventListener('mouseenter', () => {
+                    editButton.style.transform = 'scale(1.1)';
+                    editButton.style.boxShadow = '0 4px 8px rgba(8, 145, 178, 0.4)';
+                });
+                
+                editButton.addEventListener('mouseleave', () => {
+                    editButton.style.transform = 'scale(1)';
+                    editButton.style.boxShadow = '0 2px 4px rgba(8, 145, 178, 0.3)';
+                });
+                
+                editButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openEditBuchungsKarteOverlay(buchungskarte);
+                });
+                
+                // Delete Button
+                const deleteButton = document.createElement('button');
+                deleteButton.innerHTML = '🗑️';
+                deleteButton.title = i18n.t('buchungskarten.deleteBooking');
+                deleteButton.style.background = 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)';
+                deleteButton.style.color = 'white';
+                deleteButton.style.border = 'none';
+                deleteButton.style.borderRadius = '6px';
+                deleteButton.style.padding = '6px 10px';
+                deleteButton.style.cursor = 'pointer';
+                deleteButton.style.fontSize = '14px';
+                deleteButton.style.transition = 'all 0.3s ease';
+                deleteButton.style.boxShadow = '0 2px 4px rgba(220, 53, 69, 0.3)';
+                
+                deleteButton.addEventListener('mouseenter', () => {
+                    deleteButton.style.transform = 'scale(1.1)';
+                    deleteButton.style.boxShadow = '0 4px 8px rgba(220, 53, 69, 0.4)';
+                });
+                
+                deleteButton.addEventListener('mouseleave', () => {
+                    deleteButton.style.transform = 'scale(1)';
+                    deleteButton.style.boxShadow = '0 2px 4px rgba(220, 53, 69, 0.3)';
+                });
+                
+                deleteButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteBuchungsKarte(buchungskarte.id, row);
+                });
+                
+                td.appendChild(editButton);
+                td.appendChild(deleteButton);
+                td.style.textAlign = 'center';
+                td.style.padding = '8px';
+            } else {
+                td.textContent = cellText;
+            }
+            td.style.padding = '12px 10px';
+            td.style.borderRight = '1px solid #e3f2fd';
+            td.style.maxWidth = '200px';
+            td.style.overflow = 'hidden';
+            td.style.textOverflow = 'ellipsis';
+            td.style.whiteSpace = 'nowrap';
+            
+            // Farbcodierung basierend auf Zellentyp
+            switch (cellIndex) {
+                case 0: // ID
+                    td.style.fontWeight = 'bold';
+                    td.style.color = '#6366f1';
+                    td.style.backgroundColor = 'rgba(99, 102, 241, 0.1)';
+                    break;
+                case 1: // Datum
+                    td.style.color = '#059669';
+                    td.style.fontWeight = '500';
+                    break;
+                case 2: // Buchungsart
+                    if (buchungskarte.buchungsart.name === 'EINNAHME') {
+                        td.style.color = '#16a34a';
+                        td.style.backgroundColor = 'rgba(22, 163, 74, 0.1)';
+                        td.style.fontWeight = 'bold';
+                    } else {
+                        td.style.color = '#dc2626';
+                        td.style.backgroundColor = 'rgba(220, 38, 38, 0.1)';
+                        td.style.fontWeight = 'bold';
+                    }
+                    break;
+                case 3: // Kategorie
+                    td.style.color = '#7c3aed';
+                    td.style.fontWeight = '500';
+                    break;
+                case 4: // Beschreibung
+                    td.style.color = '#374151';
+                    break;
+                case 5: // Betrag
+                    td.style.fontWeight = 'bold';
+                    td.style.textAlign = 'right';
+                    if (buchungskarte.buchungsart.name === 'EINNAHME') {
+                        td.style.color = '#16a34a';
+                    } else {
+                        td.style.color = '#dc2626';
+                    }
+                    break;
+                case 6: // Belegnummer
+                    td.style.color = '#6b7280';
+                    td.style.fontFamily = 'monospace';
+                    break;
+                case 7: // USt-Satz
+                    td.style.color = '#7c3aed';
+                    td.style.fontWeight = '500';
+                    td.style.textAlign = 'right';
+                    if (cellText !== '-') {
+                        td.textContent = cellText + '%';
+                    }
+                    break;
+                case 8: // USt-Betrag
+                    td.style.color = '#7c3aed';
+                    td.style.fontWeight = '500';
+                    td.style.textAlign = 'right';
+                    if (cellText !== '-') {
+                        td.textContent = '€' + cellText;
+                    }
+                    break;
+                case 9: // Dokument
+                    td.style.color = '#0891b2';
+                    td.style.fontWeight = '500';
+                    td.style.cursor = 'pointer';
+                    td.style.textDecoration = 'underline';
+                    td.title = 'Klicken zum Anzeigen/Herunterladen';
+                    
+                    // Click-Handler für Dokument
+                    td.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        handleDokumentClick(buchungskarte.dokument);
+                    });
+                    
+                    // Hover-Effekt für Dokument
+                    td.addEventListener('mouseenter', () => {
+                        td.style.backgroundColor = 'rgba(8, 145, 178, 0.1)';
+                        td.style.transform = 'scale(1.05)';
+                    });
+                    
+                    td.addEventListener('mouseleave', () => {
+                        td.style.backgroundColor = 'transparent';
+                        td.style.transform = 'scale(1)';
+                    });
+                    break;
+                case 10: // Bild
+                    td.style.color = '#9333ea';
+                    if (cellText !== '-') {
+                        td.style.fontWeight = '500';
+                    }
+                    break;
+                case 11: // Erstellt
+                    td.style.color = '#6b7280';
+                    td.style.fontSize = '12px';
+                    break;
+                case 12: // Aktionen
+                    // Styling wird bereits in der Spezialbehandlung oben gesetzt
+                    break;
+            }
+            
+            // Tooltip für längere Texte
+            if (cellText.length > 30) {
+                td.title = cellText;
+            }
+            
+            row.appendChild(td);
+        });
+
+        tbody.appendChild(row);
+    });
+}
+
+function sortAndRenderTable(tbody: HTMLElement, buchungskartenData: any[], columnIndex: number, sortDirection: 'asc' | 'desc' | 'none', headerCount: number): void {
+    if (sortDirection === 'none') {
+        // Ursprüngliche Reihenfolge wiederherstellen (nach ID sortieren)
+        renderBuchungskartenTable(tbody, buchungskartenData, headerCount);
+        return;
+    }
+
+    // Daten sortieren
+    const sortedData = [...buchungskartenData].sort((a, b) => {
+        let valueA: any;
+        let valueB: any;
+        
+        // Werte basierend auf Spaltenindex extrahieren
+        switch (columnIndex) {
+            case 0: // ID
+                valueA = a.id;
+                valueB = b.id;
+                break;
+            case 1: // Datum
+                valueA = new Date(a.datum);
+                valueB = new Date(b.datum);
+                break;
+            case 2: // Buchungsart
+                valueA = i18n.t(`buchungskarten.buchungsArt.${a.buchungsart.name}`);
+                valueB = i18n.t(`buchungskarten.buchungsArt.${b.buchungsart.name}`);
+                break;
+            case 3: // Kategorie
+                valueA = i18n.t(`buchungskarten.buchungsKategorie.${a.kategorie.name}`);
+                valueB = i18n.t(`buchungskarten.buchungsKategorie.${b.kategorie.name}`);
+                break;
+            case 4: // Beschreibung
+                valueA = a.beschreibung;
+                valueB = b.beschreibung;
+                break;
+            case 5: // Betrag
+                valueA = a.betrag;
+                valueB = b.betrag;
+                break;
+            case 6: // Belegnummer
+                valueA = a.belegnummer || '';
+                valueB = b.belegnummer || '';
+                break;
+            case 7: // USt-Satz
+                valueA = a.ustSatz || 0;
+                valueB = b.ustSatz || 0;
+                break;
+            case 8: // USt-Betrag
+                valueA = a.ustBetrag || 0;
+                valueB = b.ustBetrag || 0;
+                break;
+            case 9: // Dokument
+                valueA = a.dokument.originalName;
+                valueB = b.dokument.originalName;
+                break;
+            case 10: // Bild
+                valueA = a.image ? a.image.name : '';
+                valueB = b.image ? b.image.name : '';
+                break;
+            case 11: // Erstellt
+                valueA = new Date(a.erstellt);
+                valueB = new Date(b.erstellt);
+                break;
+            default:
+                return 0;
+        }
+        
+        // Numerische Sortierung für Zahlen
+        if (typeof valueA === 'number' && typeof valueB === 'number') {
+            return sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
+        }
+        
+        // Datums-Sortierung
+        if (valueA instanceof Date && valueB instanceof Date) {
+            return sortDirection === 'asc' ? valueA.getTime() - valueB.getTime() : valueB.getTime() - valueA.getTime();
+        }
+        
+        // String-Sortierung (case-insensitive)
+        const stringA = valueA.toString().toLowerCase();
+        const stringB = valueB.toString().toLowerCase();
+        
+        if (sortDirection === 'asc') {
+            return stringA.localeCompare(stringB);
+        } else {
+            return stringB.localeCompare(stringA);
+        }
+    });
+
+    // Tabelle mit sortierten Daten rendern
+    renderBuchungskartenTable(tbody, sortedData, headerCount);
 }
 
 function deleteBuchungsKarte(buchungskarteId: number, row: HTMLTableRowElement): void {
