@@ -387,10 +387,9 @@ html, body {
 
 /* Main Layout */
 .main-layout {
-    display: grid;
-    grid-template-columns: 280px 1fr;
+    display: block;
     flex: 1;
-    gap: 0;
+    width: 100%;
 }
 
 /* Sidebar Sections */
@@ -447,6 +446,8 @@ html, body {
 
 .content {
     flex-grow: 1;
+    width: 100%;
+    max-width: 100%;
     padding: var(--spacing-xl);
     background: linear-gradient(135deg, #fafafa 0%, #f0f0f0 100%);
     min-height: calc(100vh - 120px);
@@ -455,7 +456,8 @@ html, body {
 
 @media (max-width: 768px) {
     .main-layout {
-        grid-template-columns: 1fr;
+        display: block;
+        width: 100%;
     }
     
     .sidebar {
@@ -537,6 +539,8 @@ html, body {
 
 .content {
     flex-grow: 1;
+    width: 100%;
+    max-width: 100%;
     padding: 20px;
 }
 

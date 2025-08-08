@@ -33,36 +33,136 @@
 
 
         <style>
-            .sidebar ul {
-            list-style-type: none;
-            padding-left: 0;
+            /* Horizontal Navigation Styles */
+            .horizontal-nav {
+                background: #ffffff;
+                border-bottom: 1px solid #e9ecef;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                padding: 0;
+                position: relative;
+                z-index: 100;
             }
-            .sidebar ul li {
-            margin-bottom: 8px;
+            
+            .nav-container {
+                display: flex;
+                align-items: center;
+                padding: 0 1rem;
+                max-width: 1400px;
+                margin: 0 auto;
+                flex-wrap: wrap;
             }
-            .sidebar ul li a {
-            text-decoration: none;
-            color: #333;
-            display: block;
-            padding: 5px 10px;
-            border-radius: 4px;
+            
+            .nav-item {
+                position: relative;
             }
-            .sidebar ul li a:hover {
-            background-color: #f5f5f5;
+            
+            .nav-link {
+                display: block;
+                padding: 1rem 1.5rem;
+                color: #2c3e50;
+                text-decoration: none;
+                font-weight: 500;
+                transition: all 0.2s ease;
+                border-radius: 4px;
+                white-space: nowrap;
             }
-            .sidebar ul ul {
-            padding-left: 20px;
-            display: none; /*Untermenüs standardmäßig ausblenden */
+            
+            .nav-link:hover {
+                background: #f8f9fa;
+                color: #2196f3;
             }
-            .sidebar ul li.active > ul {
-            display: block; /*Untermenüs anzeigen, wenn aktiv */
+            
+            .dropdown-toggle::after {
+                content: '▾';
+                margin-left: 0.5rem;
+                font-size: 0.8rem;
+                transition: transform 0.2s ease;
             }
-            .sidebar ul li.has-submenu > a::after {
-            content: '▾';
-            margin-left: 5px;
+            
+            .dropdown:hover .dropdown-toggle::after {
+                transform: rotate(180deg);
             }
-            .sidebar ul li.has-submenu.active > a::after {
-            content: '▴';
+            
+            .dropdown-menu {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                background: white;
+                border: 1px solid #e9ecef;
+                border-radius: 8px;
+                box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+                min-width: 200px;
+                opacity: 0;
+                visibility: hidden;
+                transform: translateY(-10px);
+                transition: all 0.2s ease;
+                z-index: 1000;
+            }
+            
+            .dropdown:hover .dropdown-menu {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+            }
+            
+            .dropdown-item {
+                display: block;
+                padding: 0.75rem 1rem;
+                color: #2c3e50;
+                text-decoration: none;
+                border-radius: 0;
+                transition: all 0.2s ease;
+            }
+            
+            .dropdown-item:hover {
+                background: #f8f9fa;
+                color: #2196f3;
+            }
+            
+            .dropdown-item:first-child {
+                border-radius: 8px 8px 0 0;
+            }
+            
+            .dropdown-item:last-child {
+                border-radius: 0 0 8px 8px;
+            }
+            
+            /* Mobile responsive navigation */
+            @media (max-width: 768px) {
+                .nav-container {
+                    flex-direction: column;
+                    align-items: stretch;
+                    padding: 0;
+                }
+                
+                .nav-item {
+                    width: 100%;
+                }
+                
+                .nav-link {
+                    padding: 0.75rem 1rem;
+                    border-bottom: 1px solid #f0f0f0;
+                }
+                
+                .dropdown-menu {
+                    position: static;
+                    box-shadow: none;
+                    border: none;
+                    background: #f8f9fa;
+                    opacity: 1;
+                    visibility: visible;
+                    transform: none;
+                    display: none;
+                }
+                
+                .dropdown:hover .dropdown-menu {
+                    display: block;
+                }
+                
+                .dropdown-item {
+                    padding: 0.5rem 2rem;
+                    border-bottom: 1px solid #e9ecef;
+                }
             }
         </style>
 
@@ -153,9 +253,6 @@
                 <header class="app-header">
                     <div class="header-content">
                         <div class="header-left">
-                            <button class="mobile-menu-toggle" id="mobileMenuToggle">
-                                ☰
-                            </button>
                             <div class="header-title-section">
                                 <h1 class="app-title">🃏 Lernkarten Management System</h1>
                                 <p class="app-subtitle">Dashboard & Verwaltung</p>
@@ -180,71 +277,66 @@
                     </div>
                 </header>
                 
+                <!-- Horizontal Navigation -->
+                <nav class="horizontal-nav">
+                    <div class="nav-container">
+                        <div class="nav-item">
+                            <a href="#" id="homeLink" class="nav-link">🏠 Startseite</a>
+                        </div>
+                        
+                        <div class="nav-item dropdown" id="materialMenu">
+                            <a href="#" id="materialMainLink" class="nav-link dropdown-toggle">📚 Lernmaterial</a>
+                            <div class="dropdown-menu">
+                                <a href="#" id="materialLink" class="dropdown-item">Unterlagen</a>
+                            </div>
+                        </div>
+                        
+                        <div class="nav-item dropdown" id="cardsMenu">
+                            <a href="#" id="cardsMainLink" class="nav-link dropdown-toggle">🃏 Lernkarten</a>
+                            <div class="dropdown-menu">
+                                <a href="#" id="cardsLink" class="dropdown-item">Karten Übersicht</a>
+                                <a href="#" id="topicLink" class="dropdown-item">Lern Gebiete</a>
+                                <a href="#" id="newcardsLink" class="dropdown-item">Neue Karte</a>
+                                <a href="#" id="manageCardsLink" class="dropdown-item">Ändern</a>
+                                <a href="#" id="lernenCardsLink" class="dropdown-item">Lernen</a>
+                                <a href="#" id="examManagementLink" class="dropdown-item">Fragebögen</a>
+                                <a href="#" id="pruefenCardsLink" class="dropdown-item">Prüfungen definieren</a>
+                                <a href="#" id="testCardsLink" class="dropdown-item">Prüfungen ablegen</a>
+                            </div>
+                        </div>
+                        
+                        <div class="nav-item">
+                            <a href="#" id="imageLink" class="nav-link">🖼️ Bilder</a>
+                        </div>
+                        
+                        <div class="nav-item dropdown" id="buchungskartenMenu">
+                            <a href="#" id="buchungskartenMainLink" class="nav-link dropdown-toggle">💳 Buchungskarten</a>
+                            <div class="dropdown-menu">
+                                <a href="#" id="buchungskartenUebersichtLink" class="dropdown-item">Übersicht</a>
+                                <a href="#" id="buchungskartenNeuLink" class="dropdown-item">Neu</a>
+                                <a href="#" id="buchungskartenAuswertungenLink" class="dropdown-item">Auswertungen</a>
+                            </div>
+                        </div>
+                        
+                        <div class="nav-item">
+                            <a href="#" id="dmsLink" class="nav-link">📁 Card DMS</a>
+                        </div>
+                        
+                        <div class="nav-item dropdown" id="managementMenu" style="display: none;">
+                            <a href="#" id="managementMainLink" class="nav-link dropdown-toggle">⚙️ Verwaltung</a>
+                            <div class="dropdown-menu">
+                                <a href="#" id="userManagementLink" class="dropdown-item" style="display: none;">Benutzer</a>
+                                <a href="#" id="groupManagementLink" class="dropdown-item" style="display: none;">Gruppen</a>
+                                <a href="#" id="roleManagementLink" class="dropdown-item" style="display: none;">Rollen</a>
+                                <a href="#" id="productManagementLink" class="dropdown-item" style="display: none;">Produkte</a>
+                                <a href="#" id="techInfoLink" class="dropdown-item" style="display: none;">Technische Info</a>
+                                <a href="#" id="storageMigrationLink" class="dropdown-item" style="display: none;">🔧 Speicher Migration</a>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+
                 <div class="main-layout">
-                    <nav class="sidebar">
-                        <div class="sidebar-header">
-                            <h2>🃏 Karten</h2>
-                        </div>
-                        
-                        <div class="sidebar-section">
-                            <h3 class="sidebar-section-title">Navigation</h3>
-                            <ul class="sidebar-section-list">
-                                <li><a href="#" id="homeLink">🏠 Startseite</a></li>
-                            </ul>
-                        </div>
-                        
-                        <div class="sidebar-section">
-                            <h3 class="sidebar-section-title">Produkte</h3>
-                            <ul class="sidebar-section-list">
-                                <li class="has-submenu" id="materialMenu">
-                                    <a href="#" id="materialMainLink">📚 Lernmaterial</a>
-                                    <ul>
-                                        <li><a href="#" id="materialLink">Unterlagen</a></li>
-                                    </ul>
-                                </li>
-                                <li class="has-submenu" id="cardsMenu">
-                                    <a href="#" id="cardsMainLink">🃏 Lernkarten</a>
-                                    <ul>
-                                        <li><a href="#" id="cardsLink">Karten Übersicht</a></li>
-                                        <li><a href="#" id="topicLink">Lern Gebiete</a></li>
-                                        <li><a href="#" id="newcardsLink">Neue Karte</a></li>
-                                        <li><a href="#" id="manageCardsLink">Ändern</a></li>
-                                        <li><a href="#" id="lernenCardsLink">Lernen</a></li>
-                                        <li><a href="#" id="examManagementLink">Fragebögen</a></li>
-                                        <li><a href="#" id="pruefenCardsLink">Prüfungen definieren</a></li>
-                                        <li><a href="#" id="testCardsLink">Prüfungen ablegen</a></li>
-                                    </ul>
-                                </li>
-                                <li><a href="#" id="imageLink">🖼️ Bilder</a></li>
-                                <li class="has-submenu" id="buchungskartenMenu">
-                                    <a href="#" id="buchungskartenMainLink">💳 Buchungskarten</a>
-                                    <ul>
-                                        <li><a href="#" id="buchungskartenUebersichtLink">Übersicht</a></li>
-                                        <li><a href="#" id="buchungskartenNeuLink">Neu</a></li>
-                                        <li><a href="#" id="buchungskartenAuswertungenLink">Auswertungen</a></li>
-                                    </ul>
-                                </li>
-                                <li><a href="#" id="dmsLink">📁 Card DMS</a></li>
-                            </ul>
-                        </div>
-                        
-                        <div class="sidebar-section">
-                            <h3 class="sidebar-section-title">Aktionen</h3>
-                            <ul class="sidebar-section-list">
-                                <li class="has-submenu" id="managementMenu" style="display: none;">
-                                    <a href="#" id="managementMainLink">⚙️ Verwaltung</a>
-                                    <ul>
-                                        <li><a href="#" id="userManagementLink" style="display: none;">Benutzer</a></li>
-                                        <li><a href="#" id="groupManagementLink" style="display: none;">Gruppen</a></li>
-                                        <li><a href="#" id="roleManagementLink" style="display: none;">Rollen</a></li>
-                                        <li><a href="#" id="productManagementLink" style="display: none;">Produkte</a></li>
-                                        <li><a href="#" id="techInfoLink" style="display: none;">Technische Info</a></li>
-                                        <li><a href="#" id="storageMigrationLink" style="display: none;">🔧 Speicher Migration</a></li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </div>
-                    </nav>
                     <main class="content" id="content">
                     <div id="homeContent"></div>
                     <div id="topicContent"></div>
@@ -275,9 +367,6 @@
                     <div id="contactContent" style="display: none;"></div>
                     </main>
                 </div>
-                
-                <!-- Mobile Menu Overlay -->
-                <div class="sidebar-overlay" id="sidebarOverlay"></div>
                 
                 <!-- Footer -->
                 <footer class="app-footer">
