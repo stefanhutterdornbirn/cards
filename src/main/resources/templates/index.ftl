@@ -16,6 +16,7 @@
         <script type="module"  src="/static/js/LearnScript.js" defer></script>
         <script type="module"  src="/static/js/NewCardScript.js" defer></script>
         <script type="module"  src="/static/menu.js" defer></script>
+        <script src="/static/mobile-nav.js" defer></script>
         <script type="module"  src="/static/js/ManageCardsScript.js" defer></script>
         <script type="module"  src="/static/js/ExamManagementScript.js" defer></script>
         <script type="module"  src="/static/js/Material.js" defer></script>
@@ -152,8 +153,13 @@
                 <header class="app-header">
                     <div class="header-content">
                         <div class="header-left">
-                            <h1 class="app-title">🃏 Lernkarten Management System</h1>
-                            <p class="app-subtitle">Dashboard & Verwaltung</p>
+                            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                                ☰
+                            </button>
+                            <div class="header-title-section">
+                                <h1 class="app-title">🃏 Lernkarten Management System</h1>
+                                <p class="app-subtitle">Dashboard & Verwaltung</p>
+                            </div>
                         </div>
                         <div class="header-right login-button-container">
                             <div class="header-user-info">
@@ -269,6 +275,9 @@
                     <div id="contactContent" style="display: none;"></div>
                     </main>
                 </div>
+                
+                <!-- Mobile Menu Overlay -->
+                <div class="sidebar-overlay" id="sidebarOverlay"></div>
                 
                 <!-- Footer -->
                 <footer class="app-footer">
